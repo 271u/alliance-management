@@ -1,0 +1,10 @@
+[project]
+# https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
+name = "train-conductors"
+version = "0.0.1"
+description = "Train Conductor tool for 271U"
+readme = "README.md"
+dependencies = [
+    "django>=6.0.5",
+    "django-allauth[socialaccount]>=65.17.0",
+]

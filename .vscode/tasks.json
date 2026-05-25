@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Django: makemigrations core",
+      "type": "shell",
+      "command": "uv",
+      "args": ["run", "manage.py", "makemigrations", "core"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Django: migrate",
+      "type": "shell",
+      "command": "uv",
+      "args": ["run", "manage.py", "migrate"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Django: prepare database",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Django: makemigrations core",
+        "Django: migrate"
+      ],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
