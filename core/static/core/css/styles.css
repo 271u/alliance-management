@@ -1,0 +1,70 @@
+@import "https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css";
+
+
+body {
+  min-height: 100vh;
+}
+
+.rotation-card {
+  max-width: 640px;
+  border: 1px solid #2b3b4d;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.rotation-title {
+  letter-spacing: 0.03em;
+}
+
+.rotation-row {
+  min-height: 54px;
+  border: 1px solid #1f2e3e;
+  border-radius: 6px;
+  color: #f5f7fa;
+}
+
+.rotation-index {
+  width: 2rem;
+  color: #9fc2e6;
+  font-size: 0.9rem;
+}
+
+.rotation-actions {
+  gap: 1.25rem;
+}
+
+.icon-button {
+  background: transparent;
+  border: 0;
+  color: #f5f7fa;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+}
+
+.icon-button:hover {
+  color: #ffb020;
+}
+
+.divider {
+  border-top: 1px solid #2b3b4d;
+}
+
+.rotation-input {
+  background: #101b28;
+  border-color: #34465b;
+  color: #e5eef8;
+}
+
+.rotation-input::placeholder {
+  color: #9fbce0;
+}
+
+.rotation-input:focus {
+  border-color: #ffb020;
+  box-shadow: 0 0 0 0.125em rgba(255, 176, 32, 0.2);
+}
+
+.rotation-player-select {
+  min-width: 300px;
+}

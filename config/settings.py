@@ -1,11 +1,34 @@
 from pathlib import Path
 import os
 
+def env_bool(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+
+    if value is None:
+        return default
+
+    return value.lower() in {"1", "true", "yes", "on"}
+
+
+def env_list(name: str, default: str = "") -> list[str]:
+    return [
+        item.strip()
+        for item in os.getenv(name, default).split(",")
+        if item.strip()
+    ]
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-secret-key")
-DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+DEBUG = env_bool("DJANGO_DEBUG", False)
+ALLOWED_HOSTS = env_list(
+    "DJANGO_ALLOWED_HOSTS",
+    "127.0.0.1,localhost",
+)
+
+CSRF_TRUSTED_ORIGINS = env_list(
+    "DJANGO_CSRF_TRUSTED_ORIGINS",
+)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -23,23 +46,44 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.openid_connect",
 
-    "core",
+    "core.apps.CoreConfig",
 ]
 
 SITE_ID = 1
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    
+    # Serve collected static files in production
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core.audit_context.AuditContextMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     # Require login by default
     "django.contrib.auth.middleware.LoginRequiredMiddleware",
     # Required by django-allauth
     "allauth.account.middleware.AccountMiddleware",
 ]
+
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 ROOT_URLCONF = "config.urls"
 
@@ -63,7 +107,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": os.getenv("SQLITE_PATH", BASE_DIR / "db.sqlite3"),
     }
 }
 
@@ -125,13 +169,15 @@ SOCIALACCOUNT_ONLY = True
 # Try to create users automatically from OIDC claims
 SOCIALACCOUNT_AUTO_SIGNUP = True
 
+ACCOUNT_LOGIN_METHODS = {"email"}
+
 # Do not require email confirmation for this app
 ACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 
 # Important with recent allauth versions:
 # avoid requiring local signup-form fields like username/password
-ACCOUNT_SIGNUP_FIELDS = ["email"]
+ACCOUNT_SIGNUP_FIELDS = ["email*"]
 
 # Optional, but useful if your OIDC provider is trusted and may return
 # an email that already exists on a local Django user.
@@ -148,7 +194,7 @@ def env_set(name: str, default: str = "") -> set[str]:
 
 OIDC_GROUPS_CLAIM = "groups"
 
-OIDC_USER_GROUPS = env_set("OIDC_USER_GROUP", "271u-management")
-OIDC_SUPERUSER_GROUPS = env_set("OIDC_ADMIN_GROUP", "271u-superuser")
+OIDC_USER_GROUPS = env_set("OIDC_USER_GROUP", "server-management")
+OIDC_SUPERUSER_GROUPS = env_set("OIDC_ADMIN_GROUP", "server-superuser")
 
 SOCIALACCOUNT_ADAPTER = "core.adapters.OIDCGroupSocialAccountAdapter"

@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.urls import path, include
 
-from core.views import home, login_start
+from core.views.home import home
+from core.views.login import login_start
+from core.views.rotation import rotation
+from core.views.player_api import api_players
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -14,4 +17,6 @@ urlpatterns = [
 
     # Protected by LoginRequiredMiddleware
     path("", home, name="home"),
+    path("rotation/", rotation, name="rotation"),
+    path("api/players", api_players, name="api_players"),
 ]

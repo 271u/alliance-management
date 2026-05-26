@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}R4/R5 Rotation | Train Conductors{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="box rotation-card p-5">
+
+      <div class="level is-mobile mb-4">
+        <div class="level-left">
+          <h1 class="is-size-5 has-text-weight-semibold rotation-title">
+            R4/R5 ROTATION
+          </h1>
+        </div>
+
+        <div class="level-right">
+          <button class="button is-dark is-small has-text-weight-semibold">
+            <span class="icon is-small">↻</span>
+            <span>Skip next leader</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="is-flex is-flex-direction-column" style="gap: 0.5rem;">
+        <div class="rotation-row is-flex is-align-items-center is-justify-content-space-between px-3">
+          <div class="is-flex is-align-items-center">
+            <span class="rotation-index">1.</span>
+            <span>A</span>
+          </div>
+
+          <div class="rotation-actions is-flex is-align-items-center">
+            <button class="icon-button" type="button" aria-label="Move up">↑</button>
+            <button class="icon-button" type="button" aria-label="Move down">↓</button>
+            <button class="icon-button" type="button" aria-label="Remove">×</button>
+          </div>
+        </div>
+
+        <div class="rotation-row is-flex is-align-items-center is-justify-content-space-between px-3">
+          <div class="is-flex is-align-items-center">
+            <span class="rotation-index">2.</span>
+            <span>B</span>
+          </div>
+
+          <div class="rotation-actions is-flex is-align-items-center">
+            <button class="icon-button" type="button" aria-label="Move up">↑</button>
+            <button class="icon-button" type="button" aria-label="Move down">↓</button>
+            <button class="icon-button" type="button" aria-label="Remove">×</button>
+          </div>
+        </div>
+
+        <div class="rotation-row is-flex is-align-items-center is-justify-content-space-between px-3">
+          <div class="is-flex is-align-items-center">
+            <span class="rotation-index">3.</span>
+            <span>C</span>
+          </div>
+
+          <div class="rotation-actions is-flex is-align-items-center">
+            <button class="icon-button" type="button" aria-label="Move up">↑</button>
+            <button class="icon-button" type="button" aria-label="Move down">↓</button>
+            <button class="icon-button" type="button" aria-label="Remove">×</button>
+          </div>
+        </div>
+
+        <div class="rotation-row is-flex is-align-items-center is-justify-content-space-between px-3">
+          <div class="is-flex is-align-items-center">
+            <span class="rotation-index">4.</span>
+            <span>D</span>
+          </div>
+
+          <div class="rotation-actions is-flex is-align-items-center">
+            <button class="icon-button" type="button" aria-label="Move up">↑</button>
+            <button class="icon-button" type="button" aria-label="Move down">↓</button>
+            <button class="icon-button" type="button" aria-label="Remove">×</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider my-4"></div>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <label class="label">Add player to rotation</label>
+
+        <div class="field has-addons">
+          <p class="control is-expanded">
+            <span class="select is-fullwidth">
+              <select name="currency">
+                {% for player in management_players %}
+                <option>{{ player.ingame_name }} {{ player.get_alliance_rank_display }}</option>
+                {% empty %}
+                <li>No active R4/R5 players found.</li>
+                {% endfor %}
+              </select>
+            </span>
+          </p>
+
+          <p class="control">
+            <button class="button is-primary" type="submit">
+              Add
+            </button>
+          </p>
+        </div>
+      </form>
+
+      <div class="divider my-4"></div>
+
+      <div class="level mt-4">
+        <button class="button is-primary level-left" type="submit">
+          Save
+        </button>
+        <button class="button is-danger level-left" type="submit">
+          Discard
+        </button>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

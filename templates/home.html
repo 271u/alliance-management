@@ -1,54 +1,45 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Django OIDC Demo</title>
+{% extends "base.html" %}
 
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
-  >
-</head>
-<body>
-  <section class="section">
-    <div class="container">
-      <div class="box">
-        <h1 class="title is-1">Django OIDC Demo</h1>
+{% block title %}Home | Train Conductors{% endblock %}
 
-        {% if user.is_authenticated %}
-          <p class="subtitle is-5">
-            You are logged in as <strong>{{ user }}</strong>.
-          </p>
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="box">
+      <h1 class="title is-1">Django OIDC Demo</h1>
 
-          <p class="subtitle is-5">
-            <ul>
-              <li>Super User: {% if user.is_superuser %}✅{% else %}🔴{% endif %}</li>
-              <li>Staff: {% if user.is_staff %}✅{% else %}🔴{% endif %}</li>
-            </ul>
-          </p>
+      {% if user.is_authenticated %}
+        <p class="subtitle is-5">
+          You are logged in as <strong>{{ user }}</strong>.
+        </p>
 
-          <form method="post" action="/accounts/logout/">
-            {% csrf_token %}
-            <button class="button is-danger" type="submit">
-              Logout
-            </button>
-          </form>
-        {% else %}
-          <p class="subtitle is-5">
-            You are not logged in.
-          </p>
+        <p class="subtitle is-5">
+          <ul>
+            <li>Super User: {% if user.is_superuser %}✅{% else %}🔴{% endif %}</li>
+            <li>Staff: {% if user.is_staff %}✅{% else %}🔴{% endif %}</li>
+          </ul>
+        </p>
 
-          <!-- "dev" must match OIDC_PROVIDER_ID -->
-          <form method="post" action="/accounts/oidc/dev/login/">
-            {% csrf_token %}
-            <button class="button is-primary" type="submit">
-              Login with OIDC
-            </button>
-          </form>
-        {% endif %}
-      </div>
+        <form method="post" action="/accounts/logout/">
+          {% csrf_token %}
+          <button class="button is-danger" type="submit">
+            Logout
+          </button>
+        </form>
+      {% else %}
+        <p class="subtitle is-5">
+          You are not logged in.
+        </p>
+
+        <!-- "dev" must match OIDC_PROVIDER_ID -->
+        <form method="post" action="/accounts/oidc/dev/login/">
+          {% csrf_token %}
+          <button class="button is-primary" type="submit">
+            Login with OIDC
+          </button>
+        </form>
+      {% endif %}
     </div>
-  </section>
-</body>
-</html>
+  </div>
+</section>
+{% endblock %}

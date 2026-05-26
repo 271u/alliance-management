@@ -1,0 +1,100 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Train Conductors{% endblock %}</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
+    >
+
+    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item has-text-weight-semibold" href="{% url 'home' %}">
+                    Train Conductors
+                </a>
+
+                <a
+                    role="button"
+                    class="navbar-burger"
+                    aria-label="menu"
+                    aria-expanded="false"
+                    data-target="main-navbar-menu"
+                >
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="main-navbar-menu" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="{% url 'home' %}">
+                        Home
+                    </a>
+                    <a class="navbar-item" href="{% url 'rotation' %}">
+                        R4/R5 Rotation
+                    </a>
+
+                    {% if user.is_staff %}
+                        <a class="navbar-item" href="/admin/">
+                            Admin
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div class="navbar-end">
+                    {% if user.is_authenticated %}
+                        <div class="navbar-item">
+                            <span class="has-text-grey-light">
+                                Logged in as <strong class="has-text-white">{{ user }}</strong>
+                            </span>
+                        </div>
+
+                        <div class="navbar-item">
+                            <form method="post" action="/accounts/logout/">
+                                {% csrf_token %}
+                                <button class="button is-light is-small" type="submit">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="section">
+        <div class="container">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const burgers = Array.from(document.querySelectorAll(".navbar-burger"));
+
+            burgers.forEach((burger) => {
+                burger.addEventListener("click", () => {
+                    const targetId = burger.dataset.target;
+                    const target = document.getElementById(targetId);
+
+                    burger.classList.toggle("is-active");
+                    target.classList.toggle("is-active");
+                });
+            });
+        });
+    </script>
+</body>
+</html>

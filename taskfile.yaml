@@ -1,0 +1,19 @@
+version: "3"
+
+vars:
+  GITUSER:
+    sh: git config user.name || echo "Unknown User"
+
+tasks:
+  check:
+    cmd: uv run python manage.py check
+
+  install:
+    desc: Install dependencies and package
+    sources:
+      - pyproject.toml
+      - uv.lock
+    generates:
+      - .venv/pyvenv.cfg
+    cmds:
+      - uv sync

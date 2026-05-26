@@ -3,19 +3,20 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Player(models.Model):
-    class AllianceRank(models.TextChoices):
-        R1 = "R1", "R1"
-        R2 = "R2", "R2"
-        R3 = "R3", "R3"
-        R4 = "R4", "R4"
-        R5 = "R5", "R5"
+    class AllianceRank(models.IntegerChoices):
+        R1 = 1, "R1"
+        R2 = 2, "R2"
+        R3 = 3, "R3"
+        R4 = 4, "R4"
+        R5 = 5, "R5"
 
     ingame_name = models.CharField(max_length=100, unique=True)
 
-    alliance_rank = models.CharField(
-        max_length=2,
+    alliance_rank = models.PositiveSmallIntegerField(
         choices=AllianceRank.choices,
         default=AllianceRank.R1,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="Alliance rank from 1 to 5. Higher means higher rank.",
     )
 
     is_active = models.BooleanField(default=True)

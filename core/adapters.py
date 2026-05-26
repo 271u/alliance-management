@@ -89,11 +89,6 @@ class OIDCGroupSocialAccountAdapter(DefaultSocialAccountAdapter):
         superuser_groups = getattr(settings, "OIDC_SUPERUSER_GROUPS", set())
 
         allowed_groups = user_groups | superuser_groups
-
-        print("OIDC extra_data:", sociallogin.account.extra_data)
-        print("OIDC groups:", oidc_groups)
-        print("Allowed groups:", allowed_groups)
-
         if not oidc_groups & allowed_groups:
             raise ImmediateHttpResponse(
                 HttpResponseForbidden(
@@ -101,10 +96,19 @@ class OIDCGroupSocialAccountAdapter(DefaultSocialAccountAdapter):
                 )
             )
 
-        self._sync_django_flags(sociallogin.user, oidc_groups)
+        user = sociallogin.user
 
-        if sociallogin.user.pk:
-            sociallogin.user.save(
+        if user is None:
+            raise ImmediateHttpResponse(
+                HttpResponseForbidden(
+                    "Access denied. No Django user could be created for this OIDC account."
+                )
+            )
+
+        self._sync_django_flags(user, oidc_groups)
+
+        if user.pk is not None:
+            user.save(
                 update_fields=[
                     "is_staff",
                     "is_superuser",
