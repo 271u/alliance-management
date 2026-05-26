@@ -1,5 +1,17 @@
 # syntax=docker/dockerfile:1
 
+FROM node:22-slim AS frontend-builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY tsconfig.json ./
+COPY typescript ./typescript
+RUN npm run build:ts
+
+
 FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim AS builder
 
 ENV UV_COMPILE_BYTECODE=1
@@ -12,12 +24,11 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-dev --no-install-project
 
 COPY . .
+COPY --from=frontend-builder /app/core/static/core/js ./core/static/core/js
 RUN uv sync --locked --no-dev
 
 # collectstatic needs Django settings to import successfully
-ENV DJANGO_DEBUG=0
-ENV DJANGO_SECRET_KEY=build-time-secret
-RUN uv run python manage.py collectstatic --noinput
+RUN DJANGO_DEBUG=0 DJANGO_SECRET_KEY=build-time-secret uv run python manage.py collectstatic --noinput
 
 
 FROM python:3.13-slim-trixie AS runtime
