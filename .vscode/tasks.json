@@ -20,13 +20,21 @@
       "dependsOrder": "sequence",
       "dependsOn": [
         "Django: makemigrations core",
-        "Django: migrate"
+        "Django: migrate",
+        "Typescript: compile"
       ],
       "problemMatcher": [],
       "group": {
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "label": "Typescript: compile",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "build:ts"],
+      "problemMatcher": []
     }
   ]
 }

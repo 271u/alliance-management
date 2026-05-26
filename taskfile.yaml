@@ -6,10 +6,16 @@ vars:
 
 tasks:
   check:
+    desc: Check django app for errors
     cmd: uv run python manage.py check
 
   install:
-    desc: Install dependencies and package
+    deps:
+      - install-python-dependencies
+      - install-js-dependencies
+
+  install-python-dependencies:
+    desc: Install Python dependencies and packages
     sources:
       - pyproject.toml
       - uv.lock
@@ -17,3 +23,17 @@ tasks:
       - .venv/pyvenv.cfg
     cmds:
       - uv sync
+
+  install-js-dependencies:
+    desc: Install NodeJS dependencies and packages
+    sources:
+      - packages.json
+    generates:
+      - package-lock.json
+    cmds:
+      - npm install
+
+  create-migrations:
+    desc: Create django migrations
+    cmds:
+      - uv run python manage.py makemigrations

@@ -141,3 +141,6 @@ GitHub.sublime-settings
 
 # Taskfile checksums
 .task/
+
+# NodeJS cache
+node_modules/

@@ -19,6 +19,14 @@ class Player(models.Model):
         help_text="Alliance rank from 1 to 5. Higher means higher rank.",
     )
 
+    last_war_id = models.CharField(
+        max_length=64,
+        unique=True,
+        null=True,
+        blank=True,
+        help_text="Unique player ID from Last War.",
+    )
+
     is_active = models.BooleanField(default=True)
 
     can_be_conductor = models.BooleanField(

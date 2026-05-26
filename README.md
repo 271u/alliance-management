@@ -4,6 +4,9 @@ A small Django web app for managing players and selecting train conductors for L
 
 The app uses OpenID Connect (OIDC) login via `django-allauth`. Access is restricted by OIDC group membership.
 
+## Edge Cases to be aware of
+- what happens when someone isn't R4 anymore?
+
 ## Features
 
 - OIDC-based login
