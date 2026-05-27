@@ -15,6 +15,7 @@ class AuditLogAdmin(admin.ModelAdmin):
         "action",
         "content_type",
         "object_repr",
+        "message",
         "path",
         "ip_address",
     )
@@ -27,6 +28,7 @@ class AuditLogAdmin(admin.ModelAdmin):
 
     search_fields = (
         "object_repr",
+        "message",
         "actor__username",
         "actor__email",
         "path",
@@ -39,6 +41,7 @@ class AuditLogAdmin(admin.ModelAdmin):
         "content_type",
         "object_id",
         "object_repr",
+        "message",
         "changes",
         "path",
         "ip_address",

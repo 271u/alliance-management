@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load audit_tags %}
+
+{% block title %}Audit Logs | Train Conductors{% endblock %}
+
+{% block content %}
+<section class="section p-0">
+  <div class="box">
+    <div class="level mb-4">
+      <div class="level-left">
+        <div>
+          <h1 class="title is-4 mb-1">Audit Logs</h1>
+          <p class="subtitle is-6 has-text-grey">Chronological overview of relevant changes in Train Conductors.</p>
+        </div>
+      </div>
+    </div>
+
+    <form method="get" class="field is-grouped is-grouped-multiline mb-5">
+      <div class="control is-expanded">
+        <input
+          class="input"
+          type="search"
+          name="q"
+          value="{{ selected_query }}"
+          placeholder="Search message or object"
+        >
+      </div>
+
+      <div class="control">
+        <div class="select">
+          <select name="action">
+            <option value="">All actions</option>
+            {% for value, label in actions %}
+              <option value="{{ value }}" {% if selected_action == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="control">
+        <button class="button is-link" type="submit">Filter</button>
+      </div>
+    </form>
+
+    {% if page.object_list %}
+      <div class="table-container">
+        <table class="table is-fullwidth is-hoverable is-striped">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Action</th>
+              <th>Actor</th>
+              <th>Object</th>
+              <th>Summary</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in page.object_list %}
+              <tr>
+                <td class="is-nowrap">{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
+                <td>
+                  <span class="tag {% if log.action == 'created' %}is-success{% elif log.action == 'updated' %}is-info{% elif log.action == 'deleted' %}is-danger{% endif %}">
+                    {{ log.get_action_display }}
+                  </span>
+                </td>
+                <td>{{ log.actor|default:"System" }}</td>
+                <td>{{ log.object_repr }}</td>
+                <td>{{ log.summary }}</td>
+                <td>
+                  <details>
+                    <summary>Show</summary>
+                    <pre class="mt-2 p-3 has-background-light is-size-7">{{ log.changes|audit_json }}</pre>
+                    {% if log.path %}
+                      <p class="is-size-7 has-text-grey">Path: {{ log.path }}</p>
+                    {% endif %}
+                    {% if log.ip_address %}
+                      <p class="is-size-7 has-text-grey">IP: {{ log.ip_address }}</p>
+                    {% endif %}
+                  </details>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+        {% if page.has_previous %}
+          <a class="pagination-previous" href="?page={{ page.previous_page_number }}{% if selected_action %}&action={{ selected_action }}{% endif %}{% if selected_query %}&q={{ selected_query|urlencode }}{% endif %}">Previous</a>
+        {% else %}
+          <a class="pagination-previous" disabled>Previous</a>
+        {% endif %}
+
+        {% if page.has_next %}
+          <a class="pagination-next" href="?page={{ page.next_page_number }}{% if selected_action %}&action={{ selected_action }}{% endif %}{% if selected_query %}&q={{ selected_query|urlencode }}{% endif %}">Next</a>
+        {% else %}
+          <a class="pagination-next" disabled>Next</a>
+        {% endif %}
+
+        <ul class="pagination-list">
+          <li><span class="pagination-link is-current">{{ page.number }} / {{ page.paginator.num_pages }}</span></li>
+        </ul>
+      </nav>
+    {% else %}
+      <div class="notification is-light">No audit logs found.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

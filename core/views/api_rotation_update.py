@@ -6,6 +6,8 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
 
 from core.models import TrainRotationEntry
+from core.models.auditlog import AuditLog
+from core.rotation_audit import create_rotation_audit_log, rotation_order_snapshot
 
 
 @require_http_methods(["POST"])
@@ -60,8 +62,11 @@ def api_rotation_update(request: HttpRequest) -> HttpResponse:
             .all()
         )
 
+        old_order = rotation_order_snapshot(entries)
+        old_player_ids = [entry.player.id for entry in sorted(entries, key=lambda entry: entry.position)] # pyright: ignore[reportAttributeAccessIssue]
+
         entries_by_player_id = {
-            entry.player.id: entry # pyright: ignore[reportAttributeAccessIssue]
+            entry.player.id: entry  # pyright: ignore[reportAttributeAccessIssue]
             for entry in entries
         }
 
@@ -76,6 +81,17 @@ def api_rotation_update(request: HttpRequest) -> HttpResponse:
                     "unknown_ids": sorted(submitted_player_ids - existing_player_ids),
                 },
                 status=400,
+            )
+
+        new_order = [
+            entries_by_player_id[player_id].player.ingame_name
+            for player_id in player_ids
+        ]
+
+        if old_player_ids == player_ids:
+            return JsonResponse(
+                {"success": True, "changed": False},
+                status=200,
             )
 
         max_position = (
@@ -105,7 +121,20 @@ def api_rotation_update(request: HttpRequest) -> HttpResponse:
             ["position"],
         )
 
+        create_rotation_audit_log(
+            action=AuditLog.Action.UPDATED,
+            message="Changed train rotation order.",
+            old_order=old_order,
+            new_order=new_order,
+            extra_changes={
+                "player_ids": {
+                    "old": old_player_ids,
+                    "new": player_ids,
+                },
+            },
+        )
+
     return JsonResponse(
-        {"success": True},
+        {"success": True, "changed": True},
         status=200,
     )

@@ -5,6 +5,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
 from core.models import TrainRotationEntry
+from core.models.auditlog import AuditLog
+from core.rotation_audit import create_rotation_audit_log, rotation_order_snapshot
 
 
 @require_http_methods(["DELETE"])
@@ -48,12 +50,21 @@ def api_rotation_delete(request):
                 status=404,
             )
 
+        old_entries = list(
+            TrainRotationEntry.objects
+            .select_for_update()
+            .select_related("player")
+            .order_by("position")
+        )
+        old_order = rotation_order_snapshot(old_entries)
+
         deleted_player_name = entry.player.ingame_name
         entry.delete()
 
         remaining_entries = list(
             TrainRotationEntry.objects
             .select_for_update()
+            .select_related("player")
             .order_by("position")
         )
 
@@ -79,6 +90,25 @@ def api_rotation_delete(request):
                 remaining_entries,
                 ["position"],
             )
+
+        new_order = rotation_order_snapshot(remaining_entries)
+
+        create_rotation_audit_log(
+            action=AuditLog.Action.DELETED,
+            message=f"Removed {deleted_player_name} from the train rotation.",
+            old_order=old_order,
+            new_order=new_order,
+            extra_changes={
+                "removed_player": {
+                    "old": deleted_player_name,
+                    "new": None,
+                },
+                "removed_player_id": {
+                    "old": player_id,
+                    "new": None,
+                },
+            },
+        )
 
     return JsonResponse(
         {

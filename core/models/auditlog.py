@@ -40,6 +40,8 @@ class AuditLog(models.Model):
 
     changes = models.JSONField(default=dict, blank=True)
 
+    message = models.TextField(blank=True)
+
     path = models.CharField(max_length=500, blank=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
 
@@ -50,6 +52,13 @@ class AuditLog(models.Model):
             models.Index(fields=["content_type", "object_id"]),
             models.Index(fields=["action"]),
         ]
+
+    @property
+    def summary(self):
+        if self.message:
+            return self.message
+
+        return f"{self.get_action_display()} {self.object_repr}" # pyright: ignore[reportAttributeAccessIssue]
 
     def __str__(self):
         return f"{self.created_at:%Y-%m-%d %H:%M:%S} - {self.action} - {self.object_repr}"

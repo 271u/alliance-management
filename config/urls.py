@@ -8,6 +8,7 @@ from core.views.api_player_get import api_players
 from core.views.api_rotation_add import api_rotation_add
 from core.views.api_rotation_update import api_rotation_update
 from core.views.api_rotation_delete import api_rotation_delete
+from core.views.audit_logs import audit_log_list
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -21,6 +22,7 @@ urlpatterns = [
     # Protected by LoginRequiredMiddleware
     path("", home, name="home"),
     path("rotation/", rotation_view, name="rotation"),
+    path("audit-logs/", audit_log_list, name="audit_logs"),
     path("api/rotation/add", api_rotation_add, name="api_rotation_add"),
     path("api/rotation/update", api_rotation_update, name="api_rotation_update"),
     path("api/rotation/delete", api_rotation_delete, name="api_rotation_delete"),

@@ -1,15 +1,10 @@
 import json
 from typing import Any
 
-from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import pre_save, post_save, pre_delete
 from django.dispatch import receiver
 
-from core.audit_context import (
-    get_current_ip_address,
-    get_current_path,
-    get_current_user,
-)
+from core.audit import create_instance_audit_log
 from core.models.auditlog import AuditLog
 from core.models.player import Player
 
@@ -47,17 +42,12 @@ def snapshot_instance(instance) -> dict:
     return data
 
 
-def create_audit_log(instance, action: str, changes: dict):
-    AuditLog.objects.create(
-        actor=get_current_user(),
-        action=action,
-        content_type=ContentType.objects.get_for_model(instance.__class__),
-        object_id=str(instance.pk),
-        object_repr=str(instance),
-        changes=changes,
-        path=get_current_path(),
-        ip_address=get_current_ip_address(),
-    )
+def format_field_name(field_name: str) -> str:
+    return field_name.replace("_", " ")
+
+
+def format_changed_fields(changes: dict) -> str:
+    return ", ".join(format_field_name(field_name) for field_name in changes.keys())
 
 
 @receiver(pre_save)
@@ -94,10 +84,11 @@ def audit_post_save(sender, instance, created, **kwargs):
             for field, value in new_snapshot.items()
         }
 
-        create_audit_log(
+        create_instance_audit_log(
             instance=instance,
             action=AuditLog.Action.CREATED,
             changes=changes,
+            message=f"Created player {instance}.",
         )
         return
 
@@ -120,10 +111,11 @@ def audit_post_save(sender, instance, created, **kwargs):
     if not changes:
         return
 
-    create_audit_log(
+    create_instance_audit_log(
         instance=instance,
         action=AuditLog.Action.UPDATED,
         changes=changes,
+        message=f"Updated player {instance}: {format_changed_fields(changes)}.",
     )
 
 
@@ -140,8 +132,9 @@ def audit_pre_delete(sender, instance, **kwargs):
         for field, value in snapshot_instance(instance).items()
     }
 
-    create_audit_log(
+    create_instance_audit_log(
         instance=instance,
         action=AuditLog.Action.DELETED,
         changes=changes,
+        message=f"Deleted player {instance}.",
     )
