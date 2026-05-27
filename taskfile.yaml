@@ -9,7 +9,19 @@ tasks:
     desc: Check django app for errors
     cmd: uv run python manage.py check
 
+  run:prod:
+    desc: Runs the Django app in production mode
+    deps:
+      - install
+    env:
+      DJANGO_DEBUG: 0
+    cmds:
+      - npm run build:ts
+      - uv run python manage.py collectstatic --noinput --clear
+      - uv run python manage.py runserver
+
   install:
+    desc: Meta task to install all dependencies and packages
     deps:
       - install-python-dependencies
       - install-js-dependencies
@@ -20,7 +32,7 @@ tasks:
       - pyproject.toml
       - uv.lock
     generates:
-      - .venv/pyvenv.cfg
+      - .venv/
     cmds:
       - uv sync
 
@@ -30,6 +42,7 @@ tasks:
       - packages.json
     generates:
       - package-lock.json
+      - node_modules/
     cmds:
       - npm install
 
@@ -37,3 +50,10 @@ tasks:
     desc: Create django migrations
     cmds:
       - uv run python manage.py makemigrations
+
+  clean:
+    desc: Cleans up Python bytecode, .venv and node_modules
+    cmds:
+      - py3clean .
+      - rm -rf node_modules/
+      - rm -rf .venv/

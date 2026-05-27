@@ -3,116 +3,103 @@
 {% block title %}R4/R5 Rotation | Train Conductors{% endblock %}
 
 {% load static %}
+{% load rank_tags %}
+
 {% block content %}
-
-<template>
-  <div class="is-flex is-flex-direction-column" style="gap: 0.5rem;">
-    <div class="rotation-row is-flex is-align-items-center is-justify-content-space-between px-3">
-      <div class="is-flex is-align-items-center">
-        <span id="rotation-index" class="rotation-index"></span>
-        <span id="rotation-name"></span>
-      </div>
-
-      <div class="rotation-actions is-flex is-align-items-center">
-        <button id="rotation-up" class="icon-button" type="button" aria-label="Move up">↑</button>
-        <button id="rotation-down" class="icon-button" type="button" aria-label="Move down">↓</button>
-        <button id="rotation-remove" class="icon-button" type="button" aria-label="Remove">×</button>
-      </div>
-    </div>
-  </div>
-</template>
-
-<section class="section">
-  <div class="container">
     <div class="box rotation-card p-5">
 
-      <div class="level is-mobile mb-4">
+      <div class="rotation-header mb-4">
         <div class="level-left">
           <h1 class="is-size-5 has-text-weight-semibold rotation-title">
             R4/R5 ROTATION
           </h1>
         </div>
 
-        <div class="level-right">
-          <button class="button is-dark is-small has-text-weight-semibold">
-            <span class="icon is-small">↻</span>
-            <span>Skip next leader</span>
+        <div class="rotation-header-actions">
+          <button id="button-save" class="button is-primary is-outlined" type="button" onclick="buttonSaveAction()" disabled>
+            <i class="fa-regular fa-floppy-disk"></i>
+          </button>
+
+          <button id="button-discard" class="button is-danger is-outlined" type="button" onclick="buttonDiscardAction()" disabled>
+            <i class="fa-regular fa-trash-can"></i>
           </button>
         </div>
       </div>
 
-      <div class="is-flex is-flex-direction-column" style="gap: 0.5rem;">
-        {% for entry in rotation %}
-        <div class="rotation-row is-flex is-align-items-center is-justify-content-space-between px-3"
-          data-id="{{ entry.player.id }}" data-rank="{{ entry.player.get_alliance_rank_display }}"
-          data-name="{{ entry.player.ingame_name }}" data-position="{{ entry.position }}">
-          <div class="is-flex is-align-items-center">
-            <span class="rotation-index">{{ entry.position }}</span>
-            <span>{{ entry.player.ingame_name }}</span>
-            <span class="tag ml-2 is-info">{{ entry.player.get_alliance_rank_display }}</span>
-          </div>
+      <form id="rotation-reorder-form" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="reorder">
+        <input id="rotation-order-input" type="hidden" name="player_ids" value="">
 
-          <div class="rotation-actions is-flex is-align-items-center">
-            <button class="icon-button" type="button" aria-label="Move up">↑</button>
-            <button class="icon-button" type="button" aria-label="Move down">↓</button>
-            <button class="icon-button" type="button" aria-label="Remove">×</button>
-          </div>
+        <div id="rotation-list" class="is-flex is-flex-direction-column" style="gap: 0.5rem;">
+          {% for entry in rotation %}
+            <div
+              class="rotation-row is-flex is-align-items-center is-justify-content-space-between px-3"
+              data-id="{{ entry.player.id }}"
+              data-rank="{{ entry.player.get_alliance_rank_display }}"
+              data-name="{{ entry.player.ingame_name }}"
+              data-position="{{ entry.position }}"
+            >
+              <div class="is-flex is-align-items-center">
+                <button class="icon-button drag-handle mr-3" type="button" aria-label="Drag to reorder">
+                  ☰
+                </button>
+
+                <span class="rotation-index">{{ entry.position }}</span>
+                <span>{{ entry.player.ingame_name }}</span>
+                {% rank_tag entry.player.get_alliance_rank_display %}
+              </div>
+
+              <div class="rotation-actions is-flex is-align-items-center">
+                <button class="icon-button rotation-remove-button" type="button" aria-label="Remove">
+                  ×
+                </button>
+              </div>
+            </div>
+          {% empty %}
+            <div class="rotation-row is-flex is-align-items-center is-justify-content-space-between px-3">
+              <div class="is-flex is-align-items-center">
+                <span class="rotation-index">-</span>
+                <span>No one yet in rotation</span>
+              </div>
+            </div>
+          {% endfor %}
         </div>
-        {% empty %}
-        <div class="rotation-row is-flex is-align-items-center is-justify-content-space-between px-3">
-          <div class="is-flex is-align-items-center">
-            <span class="rotation-index">-</span>
-            <span>No one yet in rotation</span>
-          </div>
+      </form>
+
+      <div class="divider my-4"></div>
+
+      <form method="post" action="/api/rotation/add">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add">
+
+        <label class="label">Add player to rotation</label>
+
+        <div class="field has-addons">
+          <p class="control is-expanded">
+            <span class="select is-fullwidth">
+              <select id="conductor-select" name="player">
+                {% for player in management_players %}
+                  <option value="{{ player.id }}" data-rank="{{ player.get_alliance_rank_display }}">
+                    {{ player.ingame_name }} {{ player.get_alliance_rank_display }}
+                  </option>
+                {% empty %}
+                  <option value="" disabled>No eligible R4/R5 players found.</option>
+                {% endfor %}
+              </select>
+            </span>
+          </p>
+
+          <p class="control">
+            <button class="button is-primary" type="submit">
+              Add
+            </button>
+          </p>
         </div>
-      </div>
-    </div>
-    {% endfor %}
+      </form>
 
-    <div class="divider my-4"></div>
-
-    <form method="post">
-      {% csrf_token %}
-
-      <label class="label">Add player to rotation</label>
-
-      <div class="field has-addons">
-        <p class="control is-expanded">
-          <span class="select is-fullwidth">
-            <select id="conductor-select" name="player">
-              {% for player in management_players %}
-              <option value="{{ player.id }}" data-rank="{{ player.get_alliance_rank_display }}">
-                {{ player.ingame_name }} {{ player.get_alliance_rank_display }}
-              </option>
-              {% empty %}
-              <option value="" disabled>No eligible R4/R5 players found.</option>
-              {% endfor %}
-            </select>
-          </span>
-        </p>
-
-        <p class="control">
-          <button class="button is-primary" type="submit">
-            Add
-          </button>
-        </p>
-      </div>
-    </form>
-
-    <div class="divider my-4"></div>
-
-    <div class="level mt-4">
-      <button id="button-save" class="button is-primary level-left" type="submit" disabled>
-        Save
-      </button>
-      <button id="button-discard" class="button is-danger level-left" type="submit" disabled>
-        Discard
-      </button>
     </div>
 
-  </div>
-  </div>
-</section>
-
+<script src="{% static 'core/vendor/js/Sortable-1.15.6.min.js' %}" defer></script>
 <script src="{% static 'core/js/rotation.js' %}" defer></script>
 {% endblock %}

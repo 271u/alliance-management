@@ -9,6 +9,13 @@
       "problemMatcher": []
     },
     {
+      "label": "Task: install dependencies",
+      "type": "shell",
+      "command": "task",
+      "args": ["install"],
+      "problemMatcher": []
+    },
+    {
       "label": "Django: migrate",
       "type": "shell",
       "command": "uv",
@@ -19,6 +26,7 @@
       "label": "Django: prepare database",
       "dependsOrder": "sequence",
       "dependsOn": [
+        "Task: install dependencies",
         "Django: makemigrations core",
         "Django: migrate",
         "Typescript: compile"

@@ -1,5 +1,19 @@
-@import "https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css";
+:root {
+  --r1-font-color: #000;
+  --r1-background-color: #e9ff70;
 
+  --r2-font-color: #000;
+  --r2-background-color: #ffd670;
+
+  --r3-font-color: #000;
+  --r3-background-color: #ff9770;
+
+  --r4-font-color: #000;
+  --r4-background-color: #ff70a6;
+
+  --r5-font-color: #000;
+  --r5-background-color: #70d6ff;
+}
 
 body {
   min-height: 100vh;
@@ -67,4 +81,43 @@ body {
 
 .rotation-player-select {
   min-width: 300px;
+}
+
+.is-r1-tag {
+  color: var(--r1-font-color);
+  background-color: var(--r1-background-color);
+}
+
+.is-r2-tag {
+  color: var(--r2-font-color);
+  background-color: var(--r2-background-color);
+}
+
+.is-r3-tag {
+  color: var(--r3-font-color);
+  background-color: var(--r3-background-color);
+}
+
+.is-r4-tag {
+  color: var(--r4-font-color);
+  background-color: var(--r4-background-color);
+}
+
+.is-r5-tag {
+  color: var(--r5-font-color);
+  background-color: var(--r5-background-color);
+}
+
+.rotation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rotation-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
 }
