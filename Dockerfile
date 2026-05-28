@@ -39,8 +39,8 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
-RUN addgroup --system django \
-    && adduser --system --ingroup django django
+RUN addgroup --gid 10001 --system django \
+    && adduser --uid 10001 --system --ingroup django --home /home/django django
 
 COPY --from=builder /app /app
 
@@ -53,4 +53,4 @@ EXPOSE 8000
 
 ENTRYPOINT ["/app/docker/entrypoint.sh"]
 
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--access-logfile", "-", "--error-logfile", , "-", "--no-control-socket"]
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--access-logfile", "-", "--error-logfile", "-", "--no-control-socket"]
