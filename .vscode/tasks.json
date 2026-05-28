@@ -2,47 +2,11 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Django: makemigrations core",
-      "type": "shell",
-      "command": "uv",
-      "args": ["run", "manage.py", "makemigrations", "core"],
-      "problemMatcher": []
-    },
-    {
-      "label": "Task: install dependencies",
+      "label": "Task: Setup project",
       "type": "shell",
       "command": "task",
-      "args": ["install"],
+      "args": ["setup"],
       "problemMatcher": []
     },
-    {
-      "label": "Django: migrate",
-      "type": "shell",
-      "command": "uv",
-      "args": ["run", "manage.py", "migrate"],
-      "problemMatcher": []
-    },
-    {
-      "label": "Django: prepare database",
-      "dependsOrder": "sequence",
-      "dependsOn": [
-        "Task: install dependencies",
-        "Django: makemigrations core",
-        "Django: migrate",
-        "Typescript: compile"
-      ],
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
-    },
-    {
-      "label": "Typescript: compile",
-      "type": "shell",
-      "command": "npm",
-      "args": ["run", "build:ts"],
-      "problemMatcher": []
-    }
   ]
 }

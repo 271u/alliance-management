@@ -15,7 +15,7 @@
       ],
       "django": true,
       "envFile": "${workspaceFolder}/.env",
-      "preLaunchTask": "Django: prepare database"
+      "preLaunchTask": "Task: Setup project"
     }
   ]
 }

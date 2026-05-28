@@ -4,12 +4,15 @@ vars:
   GITUSER:
     sh: git config user.name || echo "Unknown User"
 
+dotenv:
+  - .env
+
 tasks:
   check:
     desc: Check django app for errors
     cmd: uv run python manage.py check
 
-  run:prod:
+  run:
     desc: Runs the Django app in production mode
     deps:
       - install
@@ -23,10 +26,10 @@ tasks:
   install:
     desc: Meta task to install all dependencies and packages
     deps:
-      - install-python-dependencies
-      - install-js-dependencies
+      - python:install-dependencies
+      - javascript:install-dependencies
 
-  install-python-dependencies:
+  python:install-dependencies:
     desc: Install Python dependencies and packages
     sources:
       - pyproject.toml
@@ -36,20 +39,30 @@ tasks:
     cmds:
       - uv sync
 
-  install-js-dependencies:
+  javascript:install-dependencies:
     desc: Install NodeJS dependencies and packages
     sources:
-      - packages.json
+      - package.json
     generates:
       - package-lock.json
       - node_modules/
     cmds:
-      - npm install
+      - npm ci
+  
+  javascript:compile:
+    desc: Compile TypeScript into JavaScript
+    cmds:
+      - npm run build:ts
 
-  create-migrations:
-    desc: Create django migrations
+  django:create-migrations:
+    desc: Create missing Django migration files
     cmds:
       - uv run python manage.py makemigrations
+  
+  django:run-migrations:
+    desc: Apply Django database migrations
+    cmds:
+      - uv run python manage.py migrate
 
   clean:
     desc: Cleans up Python bytecode, .venv and node_modules
@@ -57,3 +70,12 @@ tasks:
       - py3clean .
       - rm -rf node_modules/
       - rm -rf .venv/
+
+  setup:
+    desc: Set up the project for local development, including migration generation
+    cmds:
+      - task: install
+      - task: javascript:compile
+      - task: django:create-migrations
+      - task: django:run-migrations
+      - task: check
