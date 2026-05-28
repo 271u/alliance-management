@@ -53,4 +53,4 @@ EXPOSE 8000
 
 ENTRYPOINT ["/app/docker/entrypoint.sh"]
 
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--access-logfile", "-", "--error-logfile", "-"]
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--access-logfile", "-", "--error-logfile", , "-", "--no-control-socket"]
