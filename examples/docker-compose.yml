@@ -1,0 +1,35 @@
+services:
+  train-conductors:
+    image: ghcr.io/271u/train-conductors:v0.0.1-alpha3
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+    environment:
+      # at least 32 characters
+      DJANGO_SECRET_KEY: abcdef
+      DJANGO_DEBUG: 0
+      DJANGO_ALLOWED_HOSTS: trains.example.com
+      DJANGO_CSRF_TRUSTED_ORIGINS: https://trains.example.com
+      OIDC_PROVIDER_NAME: OIDC Provider
+      OIDC_CLIENT_ID: abcdef
+      OIDC_CLIENT_SECRET: abcdef
+      OIDC_SERVER_URL: https://login.example.com/oidc
+      OIDC_USER_GROUP: oidc-management
+      OIDC_ADMIN_GROUP: oidc-superuser
+      SQLITE_PATH: /data/db.sqlite3
+    networks:
+      - internal
+      - traefik-public
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.http.routers.trains-preprod.rule=Host(`trains.example.com`)
+      - traefik.http.routers.trains-preprod.entrypoints=https
+      - traefik.http.routers.trains-preprod.tls=true
+      - traefik.http.routers.trains-preprod.tls.certresolver=letsencrypt
+      - traefik.http.services.trains-preprod.loadbalancer.server.port=8000
+
+networks:
+  internal:
+  traefik-public:
+    external: true
