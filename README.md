@@ -17,6 +17,10 @@ The app uses OpenID Connect (OIDC) login via `django-allauth`. Access is restric
 - Docker-ready setup
 - SQLite by default for simple deployments
 
+## Roadmap
+- [ ] Event management (Member leaves, renames, joins...)
+- [ ] Comment system
+
 ## Tech Stack
 
 - Python 3.13
