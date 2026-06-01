@@ -18,8 +18,10 @@ The app uses OpenID Connect (OIDC) login via `django-allauth`. Access is restric
 - SQLite by default for simple deployments
 
 ## Roadmap
+- [ ] Pivot to alliance managememt tool
 - [ ] Event management (Member leaves, renames, joins...)
 - [ ] Comment system
+- [ ] Template system (Announcement and Mail template store)
 
 ## Tech Stack
 
