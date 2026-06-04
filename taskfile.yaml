@@ -19,7 +19,7 @@ tasks:
     env:
       DJANGO_DEBUG: 0
     cmds:
-      - npm run build:ts
+      - pnpm run build:ts
       - uv run python manage.py collectstatic --noinput --clear
       - uv run python manage.py runserver
 
@@ -44,15 +44,15 @@ tasks:
     sources:
       - package.json
     generates:
-      - package-lock.json
+      - pnpm-lock.yaml
       - node_modules/
     cmds:
-      - npm ci
+      - pnpm i --frozen-lockfile
   
   javascript:compile:
     desc: Compile TypeScript into JavaScript
     cmds:
-      - npm run build:ts
+      - pnpm run build:ts
 
   django:create-migrations:
     desc: Create missing Django migration files
@@ -79,3 +79,8 @@ tasks:
       - task: django:create-migrations
       - task: django:run-migrations
       - task: check
+
+  manage:sync_players:
+    desc: Run python manage.py sync_players
+    cmd: uv run python manage.py sync_players
+  

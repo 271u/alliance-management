@@ -1,26 +1,34 @@
 from pathlib import Path
+
+import sentry_sdk
+import logging
+
+from helpers.env import env_bool, env_list
 import os
 
-def env_bool(name: str, default: bool = False) -> bool:
-    value = os.getenv(name)
-
-    if value is None:
-        return default
-
-    return value.lower() in {"1", "true", "yes", "on"}
-
-
-def env_list(name: str, default: str = "") -> list[str]:
-    return [
-        item.strip()
-        for item in os.getenv(name, default).split(",")
-        if item.strip()
-    ]
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-secret-key")
 DEBUG = env_bool("DJANGO_DEBUG", False)
+
+logging_time_format = "" if env_bool("RUNNING_IN_CONTAINER", False) else "%(asctime)s "
+
+if DEBUG:
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format=logging_time_format + "[%(levelname)s] (%(filename)s:%(lineno)d in %(funcName)s) - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+else:
+    logging.basicConfig(
+    level=logging.INFO,
+    format=logging_time_format + "[%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+SENTRY_DSN = os.getenv("SENTRY_DSN")
+SENTRY_LOGGING = env_bool("SENTRY_LOGGING", False)
 ALLOWED_HOSTS = env_list(
     "DJANGO_ALLOWED_HOSTS",
     "127.0.0.1,localhost",
@@ -191,6 +199,14 @@ def env_set(name: str, default: str = "") -> set[str]:
         if item.strip()
     }
 
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment="production" if DEBUG else "development",
+        auto_session_tracking=False,  # GlitchTip does not support sessions
+        enable_logs=SENTRY_LOGGING,
+    )
 
 OIDC_GROUPS_CLAIM = "groups"
 

@@ -49,6 +49,8 @@ RUN chmod +x /app/docker/entrypoint.sh \
 
 USER django
 
+ENV RUNNING_IN_CONTAINER true
+
 EXPOSE 8000
 
 ENTRYPOINT ["/app/docker/entrypoint.sh"]

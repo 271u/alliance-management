@@ -4,7 +4,16 @@ from django.contrib import admin
 
 from .models.auditlog import AuditLog
 from .models.player import Player
+from .models.past_username import PastUsername
 from .models.rotation import TrainRotationEntry
+
+
+class PastUsernameInline(admin.TabularInline):
+    model = PastUsername
+    extra = 0
+    fields = ("ingame_name", "recorded_at")
+    readonly_fields = ("recorded_at",)
+    show_change_link = True
 
 
 @admin.register(AuditLog)
@@ -84,7 +93,16 @@ class PlayerAdmin(admin.ModelAdmin):
     ordering = ("ingame_name",)
 
     readonly_fields = ("created_at", "updated_at")
+    inlines = [PastUsernameInline]
 
+@admin.register(PastUsername)
+class PastUsernameAdmin(admin.ModelAdmin):
+    list_display = ("ingame_name", "player", "recorded_at")
+    list_filter = ("recorded_at",)
+    search_fields = ("ingame_name", "player__ingame_name")
+    autocomplete_fields = ("player",)
+    readonly_fields = ("recorded_at",)
+    ordering = ("-recorded_at",)
 
 @admin.register(TrainRotationEntry)
 class TrainRotationEntryAdmin(admin.ModelAdmin):

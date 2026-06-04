@@ -27,7 +27,17 @@ class Player(models.Model):
         help_text="Unique player ID from Last War.",
     )
 
+    strength = models.PositiveBigIntegerField(
+        default=0,
+        help_text="Strength of player"
+    )
+
     is_active = models.BooleanField(default=True)
+
+    is_member = models.BooleanField(
+        default=False,
+        help_text="True if player is currently member of this alliance."
+    )
 
     can_be_conductor = models.BooleanField(
         default=True,
@@ -50,10 +60,17 @@ class Player(models.Model):
     last_conductor_at = models.DateField(null=True, blank=True)
     last_vip_at = models.DateField(null=True, blank=True)
 
-    notes = models.TextField(blank=True)
+    joined_at = models.DateTimeField(null=True, blank=True)
+    left_at = models.DateTimeField(null=True, blank=True)
+
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def strength_string(self):
+        """Returns the strength formatted as a readable string (e.g., 15.92M)."""
+        return f"{self.strength / 1_000_000:.2f}M"
 
     class Meta:
         ordering = ["ingame_name"]
