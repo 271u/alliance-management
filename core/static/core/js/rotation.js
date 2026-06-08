@@ -1,4 +1,4 @@
-"use strict";
+import { getCsrfToken } from "./misc.js";
 document.addEventListener("DOMContentLoaded", () => {
     initDragAndDrop();
     initDeleteButtons();
@@ -54,10 +54,6 @@ function updateRotationOrderInput() {
         .map((row) => row.dataset.id)
         .filter((id) => id !== undefined);
     orderInput.value = ids.join(",");
-}
-function getCsrfToken() {
-    const csrfInput = document.querySelector("input[name='csrfmiddlewaretoken']");
-    return csrfInput?.value ?? "";
 }
 // obsolete?
 function updateRotationIndexes() {

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Comment | Train Conductors{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<div class="container">
+  <div class="columns is-centered">
+
+
+
+    <div class="column is-half">
+
+      <div class="box">
+
+
+        <h1 class="title is-4">Delete comment?</h1>
+
+        <p class="mb-4">
+          Comment is associated to {{ target.type }}: <a href="{{ target.href }}">{{ target.name }}</a>
+        </p>
+
+        <p class="mb-4">
+          Are you sure you want to delete this comment?
+        </p>
+
+        {% if comment %}
+        <div class="box">
+          <article class="media">
+            <div class="media-content">
+              <div class="content">
+
+                <div class="is-flex is-align-items-center is-justify-content-space-between mb-2">
+                  <div>
+                    by
+                    <strong>
+                      {% if comment.created_by %}
+                      {{ comment.created_by }}
+                      {% else %}
+                      Unknown user
+                      {% endif %}
+                    </strong>
+
+                    <small class="has-text-grey ml-2">
+                      {{ comment.created_at|date:"Y-m-d H:i" }}
+                    </small>
+                  </div>
+                </div>
+
+                <p>
+                  {{ comment.text|linebreaksbr }}
+                </p>
+
+              </div>
+            </div>
+          </article>
+        </div>
+        {% endif %}
+
+        <div class="buttons mt-5">
+          <form>
+            {% csrf_token %}
+            <input type="hidden" id="id-input" value="{{ comment.id }}">
+
+            <button id="delete-button" type="submit" class="button is-danger">
+              Delete
+            </button>
+          </form>
+
+          <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'players' %}{% endif %}" class="button is-light">
+            Cancel
+          </a>
+        </div>
+
+        <article id="error-message-article" class="message is-danger hidden">
+          <div class="message-header">
+            <p id="error-message-header">Error</p>
+          </div>
+          <div class="message-body" id="error-message-body">
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script type="module" src="{% static 'core/js/misc.js' %}"></script>
+<script type="module" src="{% static 'core/js/comment_delete.js' %}"></script>
+
+{% endblock %}

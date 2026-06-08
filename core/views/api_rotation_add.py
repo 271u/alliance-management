@@ -69,7 +69,7 @@ def _rotation_add_post(request):
                 },
                 "added_player_id": {
                     "old": None,
-                    "new": player.id,
+                    "new": player.id, # type: ignore
                 },
             },
         )

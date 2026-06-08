@@ -46,7 +46,7 @@
                 </button>
 
                 <span class="rotation-index">{{ entry.position }}</span>
-                <span>{{ entry.player.ingame_name }}</span>
+                <span class="mr-2">{{ entry.player.ingame_name }}</span>
                 {% rank_tag entry.player.get_alliance_rank_display %}
               </div>
 
@@ -101,5 +101,6 @@
     </div>
 
 <script src="{% static 'core/vendor/js/Sortable-1.15.6.min.js' %}" defer></script>
-<script src="{% static 'core/js/rotation.js' %}" defer></script>
+<script type="module" src="{% static 'core/js/misc.js' %}"></script>
+<script type="module" src="{% static 'core/js/rotation.js' %}"></script>
 {% endblock %}

@@ -1,11 +1,18 @@
 # core/admin.py
 
 from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericTabularInline
+
+from django.utils import timezone
+from django.urls import NoReverseMatch, reverse
+from django.utils.html import format_html
 
 from .models.auditlog import AuditLog
 from .models.player import Player
 from .models.past_username import PastUsername
 from .models.rotation import TrainRotationEntry
+from .models.comment import Comment
+
 
 
 class PastUsernameInline(admin.TabularInline):
@@ -14,6 +21,31 @@ class PastUsernameInline(admin.TabularInline):
     fields = ("ingame_name", "recorded_at")
     readonly_fields = ("recorded_at",)
     show_change_link = True
+
+
+class CommentInline(GenericTabularInline):
+    model = Comment
+    extra = 0
+
+    fields = (
+        "text",
+        "created_by",
+        "created_at",
+        "updated_at",
+        "deleted_at",
+        "deleted_by",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "deleted_at",
+        "deleted_by",
+    )
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.filter(deleted_at__isnull=True)
 
 
 @admin.register(AuditLog)
@@ -72,6 +104,7 @@ class PlayerAdmin(admin.ModelAdmin):
     list_display = (
         "ingame_name",
         "alliance_rank",
+        "is_member",
         "is_active",
         "can_be_conductor",
         "can_be_vip",
@@ -82,6 +115,7 @@ class PlayerAdmin(admin.ModelAdmin):
 
     list_filter = (
         "alliance_rank",
+        "is_member",
         "is_active",
         "can_be_conductor",
         "can_be_vip",
@@ -93,7 +127,10 @@ class PlayerAdmin(admin.ModelAdmin):
     ordering = ("ingame_name",)
 
     readonly_fields = ("created_at", "updated_at")
-    inlines = [PastUsernameInline]
+    inlines = [
+        PastUsernameInline,
+        CommentInline
+    ]
 
 @admin.register(PastUsername)
 class PastUsernameAdmin(admin.ModelAdmin):
@@ -149,3 +186,77 @@ class TrainRotationEntryAdmin(admin.ModelAdmin):
     )
     def player_can_be_conductor(self, obj):
         return obj.player.can_be_conductor
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = (
+        "short_text",
+        "referenced_object_link",
+        "content_type",
+        "created_by",
+        "created_at",
+        "is_deleted",
+        "deleted_by",
+        "deleted_at",
+    )
+
+    list_filter = (
+        "content_type",
+        "created_at",
+        "deleted_at",
+    )
+
+    search_fields = (
+        "text",
+        "created_by__username",
+        "created_by__email",
+        "deleted_by__username",
+        "deleted_by__email",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "deleted_at",
+        "deleted_by",
+    )
+
+    ordering = ("-created_at",)
+
+    list_select_related = (
+        "content_type",
+        "created_by",
+        "deleted_by",
+    )
+
+    @admin.display(description="Text")
+    def short_text(self, obj):
+        return obj.text[:80]
+
+    @admin.display(description="Referenced object")
+    def referenced_object_link(self, obj):
+        referenced_object = obj.content_object
+
+        if referenced_object is None:
+            return "-"
+
+        app_label = obj.content_type.app_label
+        model_name = obj.content_type.model
+
+        admin_url_name = f"admin:{app_label}_{model_name}_change"
+
+        try:
+            url = reverse(admin_url_name, args=[obj.object_id])
+        except NoReverseMatch:
+            return str(referenced_object)
+
+        return format_html(
+            '<a href="{}">{}</a>',
+            url,
+            referenced_object,
+        )
+
+    @admin.display(boolean=True, description="Deleted")
+    def is_deleted(self, obj):
+        return obj.deleted_at is not None

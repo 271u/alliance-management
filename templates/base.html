@@ -43,6 +43,10 @@
                     <a class="navbar-item" href="{% url 'rotation' %}">
                         R4/R5 Rotation
                     </a>
+                    
+                    <a class="navbar-item" href="{% url 'players' %}">
+                        Players
+                    </a>
 
                     {% if user.is_staff %}
                         <a class="navbar-item" href="{% url 'audit_logs' %}">

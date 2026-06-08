@@ -27,7 +27,7 @@ def sync_players_from_game(*, dry_run: bool = False) -> PlayerSyncResult:
     now = timezone.now()
 
     game_players = fetch_game_players()
-    logging.debug("Plaers returned by API: %d", len(game_players))
+    logging.debug("Players returned by API: %d", len(game_players))
     game_player_ids = {game_player.uid for game_player in game_players}
 
     with transaction.atomic():

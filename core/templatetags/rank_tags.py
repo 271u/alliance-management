@@ -16,7 +16,7 @@ def rank_tag(rank: str) -> str:
     css_class = rank_classes.get(rank, "is-light")
 
     return format_html(
-        '<span class="tag ml-2 {}">{}</span>',
+        '<span class="tag {}">{}</span>',
         css_class,
         rank,
     )

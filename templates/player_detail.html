@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Player Details | Train Conductors{% endblock %}
+
+{% load static %}
+{% load rank_tags %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumb" aria-label="breadcrumbs">
+    <ul>
+      <li><a href="{% url 'players' %}">Players</a></li>
+      <li class="is-active">
+        <a href="#" aria-current="page">{{ player.ingame_name }}</a>
+      </li>
+    </ul>
+  </nav>
+
+  <article id="error-message-article" class="message is-danger{% if not error_message %} hidden{% endif %}">
+    <div class="message-header">
+      <p id="error-message-header">Error</p>
+    </div>
+    <div class="message-body" id="error-message-body">
+      {{ error_message }}
+    </div>
+  </article>
+
+  <div class="box">
+    <div class="level">
+      <div class="level-left">
+        <div>
+          <h1 class="title is-3 mb-2">
+            {{ player.ingame_name }}
+          </h1>
+
+          <div class="tags">
+            {% if player.is_member %}
+            <span class="tag is-success">Member</span>
+            {% else %}
+            <span class="tag is-light">Not Member</span>
+            {% endif %}
+
+            {% if player.can_be_conductor %}
+            <span class="tag is-info">Can be Conductor</span>
+            {% else %}
+            <span class="tag is-light">No Conductor</span>
+            {% endif %}
+
+            {% if player.can_be_vip %}
+            <span class="tag is-warning">Can be VIP</span>
+            {% else %}
+            <span class="tag is-light">No VIP</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="level-right">
+        <a href="{% url 'players' %}" class="button is-light">
+          Back to players
+        </a>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="columns is-multiline">
+      <div class="column is-one-quarter">
+        <p class="heading">Rank</p>
+
+        <div class="player-detail-rank">
+          {% rank_tag player.get_alliance_rank_display %}
+        </div>
+      </div>
+
+      <div class="column is-one-quarter">
+        <p class="heading">Strength</p>
+        <p class="title is-5">
+          {{ player.strength_string|default:"-" }}
+        </p>
+      </div>
+
+      <div class="column is-one-quarter">
+        <p class="heading">Reliability</p>
+        <p class="title is-5">
+          {{ player.reliability_score|default:"-" }}/5
+        </p>
+      </div>
+
+      <div class="column is-one-quarter">
+        <p class="heading">Joined</p>
+        <p class="title is-5">
+          {{ player.joined_at_since_string|default:"-" }}
+        </p>
+      </div>
+
+      <div class="column is-one-quarter">
+        <p class="heading">Last Conductor</p>
+        <p>
+          {{ player.last_conductor_at|date:"Y-m-d H:i"|default:"-" }}
+        </p>
+      </div>
+
+      <div class="column is-one-quarter">
+        <p class="heading">Last VIP</p>
+        <p>
+          {{ player.last_vip_at|date:"Y-m-d H:i"|default:"-" }}
+        </p>
+      </div>
+
+      <div class="column is-one-quarter">
+        <p class="heading">Created</p>
+        <p>
+          {{ player.created_at|date:"Y-m-d H:i"|default:"-" }}
+        </p>
+      </div>
+
+      <div class="column is-one-quarter">
+        <p class="heading">Updated</p>
+        <p>
+          {{ player.updated_at|date:"Y-m-d H:i"|default:"-" }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="columns">
+    <div class="column is-two-thirds">
+      <div class="box">
+        <div id="player-detail-comment-add-form">
+          <div class="container level">
+            <h2 class="title is-4 mb-0 mt-2">New Comment</h2>
+            <button class="button" type="submit" id="button-submit" disabled>
+              <span class="icon-text">
+                <span class="icon">
+                  <i class="fa-solid fa-plus"></i>
+                </span>
+                <span>Add</span>
+              </span>
+            </button>
+          </div>
+          <div class="field">
+            <textarea class="textarea" placeholder="e.g. Hello world" id="message"></textarea>
+          </div>
+          <div class="control">
+            <input class="input" type="hidden" id="target-id" value="{{ player.id }}" disabled />
+            <input class="input" type="hidden" id="target-type" value="player" disabled />
+          </div>
+        </div>
+      </div>
+
+      <div class="box">
+        <h2 class="title is-4">Comments</h2>
+
+        {% if comments %}
+        {% for comment in comments %}
+        <article class="media">
+          <div class="media-content">
+            <div class="content">
+
+              <div class="is-flex is-align-items-center is-justify-content-space-between mb-2">
+                <div>
+                  by
+                  <strong>
+                    {% if comment.created_by %}
+                    {{ comment.created_by }}
+                    {% else %}
+                    Unknown user
+                    {% endif %}
+                  </strong>
+
+                  <small class="has-text-grey ml-2">
+                    {{ comment.created_at|date:"Y-m-d H:i" }}
+                  </small>
+                </div>
+
+                <a class="button is-small is-danger" href="/comments/delete/{{ comment.id }}?next={{ request.path|urlencode }}">
+                  <i class="fa-regular fa-trash-can"></i>
+                </a>
+              </div>
+
+              <p>
+                {{ comment.text|linebreaksbr }}
+              </p>
+
+            </div>
+          </div>
+        </article>
+
+        {% if not forloop.last %}
+        <hr>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        <p class="has-text-grey">
+          No comments yet.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="column">
+      <div class="box">
+        <h2 class="title is-5">Player status</h2>
+
+        <table class="table is-fullwidth">
+          <tbody>
+            <tr>
+              <th>Member</th>
+              <td>
+                {% if player.is_member %}
+                <span class="tag is-success">Yes</span>
+                {% else %}
+                <span class="tag is-danger">No</span>
+                {% endif %}
+              </td>
+            </tr>
+
+            <tr>
+              <th>Conductor</th>
+              <td>
+                {% if player.can_be_conductor %}
+                <span class="tag is-success">Yes</span>
+                {% else %}
+                <span class="tag is-danger">No</span>
+                {% endif %}
+              </td>
+            </tr>
+
+            <tr>
+              <th>VIP</th>
+              <td>
+                {% if player.can_be_vip %}
+                <span class="tag is-success">Yes</span>
+                {% else %}
+                <span class="tag is-danger">No</span>
+                {% endif %}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module" src="{% static 'core/js/misc.js' %}"></script>
+<script type="module" src="{% static 'core/js/player_detail.js' %}"></script>
+{% endblock %}

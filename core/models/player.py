@@ -1,5 +1,10 @@
+from django.utils import timezone
+
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.contenttypes.fields import GenericRelation
+
+from .comment import Comment
 
 
 class Player(models.Model):
@@ -25,6 +30,11 @@ class Player(models.Model):
         null=True,
         blank=True,
         help_text="Unique player ID from Last War.",
+    )
+
+    comments = GenericRelation(
+        Comment,
+        related_query_name="player",
     )
 
     strength = models.PositiveBigIntegerField(
@@ -71,6 +81,36 @@ class Player(models.Model):
     def strength_string(self):
         """Returns the strength formatted as a readable string (e.g., 15.92M)."""
         return f"{self.strength / 1_000_000:.2f}M"
+    
+    @property
+    def joined_at_since_string(self) -> str:
+        """Returns the time since player joined, formatted as a readable string (e.g., 5d14h)."""
+        if not self.joined_at:
+            return "-"
+
+        now = timezone.now()
+        timespan = now - self.joined_at
+
+        days = timespan.days
+        hours = timespan.seconds // 3600
+
+        return f"{days}d {hours}h"
+    
+    @property
+    def joined_at_string(self) -> str:
+        """Returns the time the player joined, formatted as a readable string (e.g., 5d14h)."""
+        if not self.joined_at:
+            return "-"
+
+        return self.joined_at.strftime("%d.%m.%Y %H:%M %Z")
+    
+    @property
+    def last_conductor_string(self) -> str:
+        """Returns the time the player joined, formatted as a readable string (e.g., 5d14h)."""
+        if not self.last_conductor_at:
+            return "-"
+
+        return self.last_conductor_at.strftime("%d.%m.%Y")
 
     class Meta:
         ordering = ["ingame_name"]

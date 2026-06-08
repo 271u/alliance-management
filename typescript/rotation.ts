@@ -1,3 +1,5 @@
+import { getCsrfToken } from "./misc.js";
+
 type Conductor = {
   id: number;
   name: string;
@@ -95,14 +97,6 @@ function updateRotationOrderInput(): void {
     .filter((id): id is string => id !== undefined);
 
   orderInput.value = ids.join(",");
-}
-
-function getCsrfToken(): string {
-  const csrfInput = document.querySelector<HTMLInputElement>(
-    "input[name='csrfmiddlewaretoken']",
-  );
-
-  return csrfInput?.value ?? "";
 }
 
 // obsolete?

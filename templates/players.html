@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Player List | Train Conductors{% endblock %}
+
+{% load static %}
+{% load rank_tags %}
+
+{% block content %}
+<table class="table is-striped is-hoverable">
+  <thead>
+    <tr>
+      <th>Ingame Name</th>
+      <th>Strength</th>
+      <th>🚄 Last Train Conductor</th>
+      <th>📅 Membership Duration</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for player in players %}
+    <tr>
+      <td>
+        <div class="is-flex">
+          <span class="mr-2">
+            {% rank_tag player.get_alliance_rank_display %}
+          </span>
+
+          <span>
+            {{ player.ingame_name }}
+          </span>
+        </div>
+      </td>
+      <td>{{ player.strength_string }}</td>
+      <td>{{ player.last_conductor_string }}</td>
+      <td><abbr title="Joined {{ player.joined_at_string }}">{{ player.joined_at_since_string }}</abbr></td>
+
+      <td>
+        <a href="{% url 'players' %}{{ player.id }}">
+          <span class="tag is-dark is-medium">
+            <span class="icon-text">
+              <span class="icon">
+                <i class="fa-solid fa-info"></i>
+              </span>
+              <span>Details</span>
+            </span>
+          </span>
+        </a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td>Nobody found :(</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
