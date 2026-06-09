@@ -2,8 +2,8 @@ import logging
 
 from django.http import HttpResponse, JsonResponse, HttpResponseNotAllowed
 from django.views.decorators.http import require_http_methods
-from core.models.comment import Comment
-from core.models.comment_api import ApiCommentModel
+from core.models.db.comment import Comment
+from core.models.api.comment_api import ApiCommentModel
 from core.helpers import JsonErrorMessage
 
 @require_http_methods(["DELETE"])

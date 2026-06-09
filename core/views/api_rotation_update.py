@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
 
 from core.models import TrainRotationEntry
-from core.models.auditlog import AuditLog
+from core.models.db.auditlog import AuditLog
 from core.rotation_audit import create_rotation_audit_log, rotation_order_snapshot
 
 

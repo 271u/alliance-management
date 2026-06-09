@@ -5,8 +5,8 @@ from django.db.models.signals import pre_save, post_save, pre_delete
 from django.dispatch import receiver
 
 from core.audit import create_instance_audit_log
-from core.models.auditlog import AuditLog
-from core.models.player import Player
+from core.models.db.auditlog import AuditLog
+from core.models.db.player import Player
 
 
 AUDITED_MODELS = {

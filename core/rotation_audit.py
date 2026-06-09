@@ -1,6 +1,6 @@
 from core.audit import create_audit_log
-from core.models.auditlog import AuditLog
-from core.models.rotation import TrainRotationEntry
+from core.models.db.auditlog import AuditLog
+from core.models.db.rotation import TrainRotationEntry
 
 ROTATION_OBJECT_ID = "train-conductor-rotation"
 ROTATION_OBJECT_REPR = "Train conductor rotation"

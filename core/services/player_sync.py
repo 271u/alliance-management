@@ -1,13 +1,15 @@
 from dataclasses import dataclass
 import datetime
+import time
 import logging
 
 from django.db import transaction
 from django.utils import timezone
 
-from core.models.past_username import PastUsername
-from core.models.player import Player
-from core.models.lastwartools_api import AllianceApiMember
+from core.models.db.past_username import PastUsername
+from core.models.db.player import Player
+from core.models.db.player_sync_run import PlayerSyncRun
+from core.models.api.lastwartools_api import AllianceApiMember
 from core.services.game_client import fetch_game_players
 
 
@@ -22,11 +24,26 @@ class PlayerSyncResult:
 
 def sync_players_from_game(*, dry_run: bool = False) -> PlayerSyncResult:
     logging.debug("Starting Player sync")
+    start_time = time.perf_counter()
+
+    run = PlayerSyncRun()
+    run.save()
+
     result = PlayerSyncResult()
 
     now = timezone.now()
 
-    game_players = fetch_game_players()
+    try:
+        game_players = fetch_game_players()
+    except Exception as e:
+        logging.error(f"Player sync failed: failed to fetch players from API: {e}")
+        run.status = "failed"
+        run.message = f"failed to fetch players from API: {e}"
+        run.finished_at = timezone.now()
+        run.save()
+        return result
+
+
     logging.debug("Players returned by API: %d", len(game_players))
     game_player_ids = {game_player.uid for game_player in game_players}
 
@@ -124,5 +141,18 @@ def sync_players_from_game(*, dry_run: bool = False) -> PlayerSyncResult:
                 existing_member.left_at = now
                 existing_member.save()
                 logging.debug("Player %s (UID %s): updated member in database", existing_member.ingame_name, existing_member.last_war_id)
+    
+    run.status = "success"
+    run.finished_at = timezone.now()
+    run.created_count = result.created
+    run.updated_count = result.updated
+    run.joined_count = result.joined_alliance
+    run.left_count = result.left_alliance
+    run.save()
+
+    end_time = time.perf_counter()
+
+    execution_time = end_time - start_time
+    logging.debug(f"Executed in {execution_time:.2f} seconds")
 
     return result

@@ -7,11 +7,12 @@ from django.utils import timezone
 from django.urls import NoReverseMatch, reverse
 from django.utils.html import format_html
 
-from .models.auditlog import AuditLog
-from .models.player import Player
-from .models.past_username import PastUsername
-from .models.rotation import TrainRotationEntry
-from .models.comment import Comment
+from .models.db.auditlog import AuditLog
+from .models.db.player import Player
+from .models.db.past_username import PastUsername
+from .models.db.rotation import TrainRotationEntry
+from .models.db.comment import Comment
+from .models.db.player_sync_run import PlayerSyncRun
 
 
 
@@ -260,3 +261,59 @@ class CommentAdmin(admin.ModelAdmin):
     @admin.display(boolean=True, description="Deleted")
     def is_deleted(self, obj):
         return obj.deleted_at is not None
+
+
+@admin.register(PlayerSyncRun)
+class PlayerSyncRunAdmin(admin.ModelAdmin):
+    list_display = (
+        "started_at",
+        "status",
+        "created_count",
+        "updated_count",
+        "joined_count",
+        "left_count",
+        "finished_at",
+        "short_message",
+    )
+
+    list_filter = (
+        "status",
+        "started_at",
+        "finished_at",
+    )
+
+    search_fields = (
+        "message",
+    )
+
+    readonly_fields = (
+        "status",
+        "message",
+        "created_count",
+        "updated_count",
+        "joined_count",
+        "left_count",
+        "started_at",
+        "updated_at",
+        "finished_at",
+    )
+
+    ordering = (
+        "-started_at",
+    )
+
+    @admin.display(description="Message")
+    def short_message(self, obj):
+        if not obj.message:
+            return "-"
+
+        return obj.message[:80]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser

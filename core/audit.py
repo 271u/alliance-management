@@ -8,7 +8,7 @@ from core.audit_context import (
     get_current_path,
     get_current_user,
 )
-from core.models.auditlog import AuditLog
+from core.models.db.auditlog import AuditLog
 
 
 def create_audit_log(

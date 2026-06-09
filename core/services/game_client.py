@@ -1,7 +1,7 @@
 import os
 import requests
 import logging
-from core.models.lastwartools_api import AllianceApiResponse, AllianceApiMember
+from core.models.api.lastwartools_api import AllianceApiResponse, AllianceApiMember
 
 
 def fetch_game_players() -> list[AllianceApiMember]:
@@ -38,7 +38,7 @@ def fetch_game_players() -> list[AllianceApiMember]:
         result = AllianceApiResponse.model_validate_json(response.text)
     except ValueError as e:
         logging.error("failed to parse response from API: %s", e)
-        return []
+        raise e
 
     return result.members
 

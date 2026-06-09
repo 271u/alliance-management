@@ -2,6 +2,7 @@
 
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,6 +14,7 @@
     <link rel="stylesheet" href="{% static 'core/vendor/css/bulma-1.0.4.min.css' %}">
     <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
 </head>
+
 <body>
     <header>
         <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
@@ -21,13 +23,8 @@
                     Train Conductors
                 </a>
 
-                <a
-                    role="button"
-                    class="navbar-burger"
-                    aria-label="menu"
-                    aria-expanded="false"
-                    data-target="main-navbar-menu"
-                >
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+                    data-target="main-navbar-menu">
                     <span aria-hidden="true"></span>
                     <span aria-hidden="true"></span>
                     <span aria-hidden="true"></span>
@@ -43,37 +40,67 @@
                     <a class="navbar-item" href="{% url 'rotation' %}">
                         R4/R5 Rotation
                     </a>
-                    
+
                     <a class="navbar-item" href="{% url 'players' %}">
                         Players
                     </a>
 
                     {% if user.is_staff %}
-                        <a class="navbar-item" href="{% url 'audit_logs' %}">
-                            Audit Logs
-                        </a>
-                        <a class="navbar-item" href="/admin/">
-                            Admin
-                        </a>
+                    <a class="navbar-item" href="{% url 'audit_logs' %}">
+                        Audit Logs
+                    </a>
+                    <a class="navbar-item" href="/admin/">
+                        Admin
+                    </a>
                     {% endif %}
                 </div>
 
                 <div class="navbar-end">
-                    {% if user.is_authenticated %}
-                        <div class="navbar-item">
-                            <span class="has-text-grey-light">
-                                Logged in as <strong class="has-text-white">{{ user }}</strong>
+                    {% if user.is_staff %}
+                    {% if latest_player_sync %}
+                    <div class="navbar-item">
+                        {% if latest_player_sync.status == "success" %}
+                        <span class="tag is-success"
+                            title="Finished at {{ latest_player_sync.finished_at|date:'Y-m-d H:i' }}">
+                            <i class="fa-solid fa-user-check ml-0 mr-2"></i>
+                            {{latest_player_sync.finished_at|timesince}} ago
+                        </span>
+                        {% elif latest_player_sync.status == "running" %}
+                        <span class="tag is-warning is-light"
+                            title="Started at {{ latest_player_sync.started_at|date:'Y-m-d H:i' }}">
+                            <i class="fa-solid fa-user-clock ml-0 mr-2"></i></i> Sync running
+                        </span>
+                        {% elif latest_player_sync.status == "failed" %}
+                        <a href="/admin/core/playersyncrun/{{ latest_player_sync.id }}/change/">
+                            <span class="tag is-danger is-medium" title="{{ latest_player_sync.message }}">
+                                <i class="fa-solid fa-user-xmark ml-0 mr-2"></i>
+                                {{latest_player_sync.finished_at|timesince}} ago
                             </span>
-                        </div>
+                        </a>
+                        {% endif %}
+                        {% else %}
+                        <span class="tag is-light">
+                            <i class="fa-solid fa-user-slash ml-0 mr-2"></i> never
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
 
-                        <div class="navbar-item">
-                            <form method="post" action="/accounts/logout/">
-                                {% csrf_token %}
-                                <button class="button is-light is-small" type="submit">
-                                    Logout
-                                </button>
-                            </form>
-                        </div>
+                    {% if user.is_authenticated %}
+                    <div class="navbar-item">
+                        <span class="has-text-grey-light">
+                            Logged in as <strong class="has-text-white">{{ user }}</strong>
+                        </span>
+                    </div>
+
+                    <div class="navbar-item">
+                        <form method="post" action="/accounts/logout/">
+                            {% csrf_token %}
+                            <button class="button is-light is-small" type="submit">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -103,4 +130,5 @@
         });
     </script>
 </body>
+
 </html>

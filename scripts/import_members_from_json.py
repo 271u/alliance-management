@@ -107,7 +107,7 @@ def main() -> int:
 
     from django.db import transaction
     from django.db.models import Q
-    from core.models.player import Player
+    from core.models.db.player import Player
 
     data = load_json(args.json_file)
     members = get_members(data)

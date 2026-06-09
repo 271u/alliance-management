@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
 
-from core.models.player import Player
-from core.models.comment import Comment
+from core.models.db.player import Player
+from core.models.db.comment import Comment
 
 
 @require_http_methods(["GET"])

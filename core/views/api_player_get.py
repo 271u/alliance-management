@@ -1,6 +1,6 @@
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.views.decorators.http import require_http_methods
-from core.models.player import Player
+from core.models.db.player import Player
 
 @require_http_methods(["GET"])
 def api_players(request):
