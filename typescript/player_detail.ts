@@ -1,14 +1,14 @@
 import { CommentBody } from "./models.js";
 import { getCsrfToken } from "./misc.js";
 
-async function setError(message:string) {
+async function setError(message: string) {
   const errorArticle = document.getElementById("error-message-article") as HTMLElement | null;
   const errorHeader = document.getElementById("error-message-header") as HTMLParagraphElement | null;
   const errorMessage = document.getElementById("error-message-body") as HTMLDivElement | null;
 
   if (
     errorArticle == null ||
-    errorHeader  == null ||
+    errorHeader == null ||
     errorMessage == null
   ) {
     return
@@ -26,9 +26,9 @@ function validateInputs() {
 
   if (!addButton) return;
 
-  if (messageInput && messageInput.value.length >= 3) 
+  if (messageInput && messageInput.value.length >= 3)
     addButton.disabled = false
-  else 
+  else
     addButton.disabled = true
 }
 
@@ -87,7 +87,7 @@ async function sendCommentPost() {
   if (response.status != 201) {
     let responseBody = await response.json()
 
-    if (responseBody.message) 
+    if (responseBody.message)
       setError("Failed to create new comment: " + responseBody.message)
     else
       setError("Failed to create new comment, and server did not give a reason why")
@@ -95,9 +95,10 @@ async function sendCommentPost() {
     addButton.classList.remove("is-loading")
     addButton.disabled = false
     messageInput.disabled = false
-
     return;
   }
+
+  messageInput.value = ""
 
   window.location.reload();
 }

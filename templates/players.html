@@ -6,6 +6,20 @@
 {% load rank_tags %}
 
 {% block content %}
+
+<div class="tabs">
+  <ul>
+    {% if show_others %}
+    <li><a href="{% url 'players' %}"><i class="fa-solid fa-user-check mr-2"></i> Members</a></li>
+    <li class="is-active"><a><i class="fa-solid fa-user-xmark mr-2"></i> Non-Members</a></li>
+    {% else %}
+    <li class="is-active"><a><i class="fa-solid fa-user-check mr-2"></i> Members</a></li>
+    <li><a href="{% url 'players' %}?others=true"><i class="fa-solid fa-user-xmark mr-2"></i> Non-Members</a></li>
+    {% endif %}
+    <li><a href="{% url 'player_search' %}"><i class="fa-solid fa-magnifying-glass mr-2"></i> Search</a></li>
+  </ul>
+</div>
+
 <table class="table is-striped is-hoverable">
   <thead>
     <tr>
@@ -34,12 +48,24 @@
       <td>{{ player.last_conductor_string }}</td>
       <td><abbr title="Joined {{ player.joined_at_string }}">{{ player.joined_at_since_string }}</abbr></td>
 
-      <td>
-        <a href="{% url 'players' %}{{ player.id }}">
+      <td class="has-text-right">
+        {% if player.active_comment_count %}
+        <a href="{% url 'player_detail' player.id %}#comments">
+          <span class="tag is-dark is-medium">
+            <span style="color:yellow" class="icon-text">
+              <span class="icon">
+                <i class="fa-regular fa-comments"></i>
+              </span>
+              <span>{{ player.active_comment_count }}</span>
+            </span>
+          </span>
+        </a>
+        {% endif %}
+        <a href="{% url 'player_detail' player.id %}">
           <span class="tag is-dark is-medium">
             <span class="icon-text">
               <span class="icon">
-                <i class="fa-solid fa-info"></i>
+                <i class="fa-solid fa-circle-info"></i>
               </span>
               <span>Details</span>
             </span>

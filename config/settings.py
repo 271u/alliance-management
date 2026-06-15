@@ -4,6 +4,7 @@ import sentry_sdk
 import logging
 
 from helpers.env import env_bool, env_list
+from config.database import build_database_config
 import os
 
 
@@ -113,12 +114,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.getenv("SQLITE_PATH", BASE_DIR / "data" / "db.sqlite3"),
-    }
-}
+DATABASES = build_database_config(BASE_DIR)
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
@@ -204,7 +200,7 @@ def env_set(name: str, default: str = "") -> set[str]:
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
-        environment="production" if DEBUG else "development",
+        environment="development" if DEBUG else "production",
         auto_session_tracking=False,  # GlitchTip does not support sessions
         enable_logs=SENTRY_LOGGING,
     )

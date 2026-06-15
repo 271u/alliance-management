@@ -83,6 +83,7 @@ async function sendCommentPost() {
         messageInput.disabled = false;
         return;
     }
+    messageInput.value = "";
     window.location.reload();
 }
 // Wait for the DOM to be ready, then hook up the click event

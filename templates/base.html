@@ -57,17 +57,17 @@
 
                 <div class="navbar-end">
                     {% if user.is_staff %}
-                    {% if latest_player_sync %}
                     <div class="navbar-item">
+                        {% if latest_player_sync %}
                         {% if latest_player_sync.status == "success" %}
-                        <span class="tag is-success"
-                            title="Finished at {{ latest_player_sync.finished_at|date:'Y-m-d H:i' }}">
+                        <span class="tag is-success is-medium"
+                            title="Player Sync finished at {{ latest_player_sync.finished_at|date:'Y-m-d H:i' }}">
                             <i class="fa-solid fa-user-check ml-0 mr-2"></i>
                             {{latest_player_sync.finished_at|timesince}} ago
                         </span>
                         {% elif latest_player_sync.status == "running" %}
-                        <span class="tag is-warning is-light"
-                            title="Started at {{ latest_player_sync.started_at|date:'Y-m-d H:i' }}">
+                        <span class="tag is-warning is-light is-medium"
+                            title="Player Sync started at {{ latest_player_sync.started_at|date:'Y-m-d H:i' }}">
                             <i class="fa-solid fa-user-clock ml-0 mr-2"></i></i> Sync running
                         </span>
                         {% elif latest_player_sync.status == "failed" %}
@@ -79,7 +79,7 @@
                         </a>
                         {% endif %}
                         {% else %}
-                        <span class="tag is-light">
+                        <span class="tag is-medium">
                             <i class="fa-solid fa-user-slash ml-0 mr-2"></i> never
                         </span>
                         {% endif %}

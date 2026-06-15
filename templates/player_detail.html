@@ -37,7 +37,7 @@
             {% if player.is_member %}
             <span class="tag is-success">Member</span>
             {% else %}
-            <span class="tag is-light">Not Member</span>
+            <span class="tag is-danger">Not Member</span>
             {% endif %}
 
             {% if player.can_be_conductor %}
@@ -150,7 +150,7 @@
       </div>
 
       <div class="box">
-        <h2 class="title is-4">Comments</h2>
+        <h2 id="comments" class="title is-4">Comments</h2>
 
         {% if comments %}
         {% for comment in comments %}
@@ -174,7 +174,7 @@
                   </small>
                 </div>
 
-                <a class="button is-small is-danger" href="/comments/delete/{{ comment.id }}?next={{ request.path|urlencode }}">
+                <a class="button is-small is-danger" href="{% url 'comment_delete' comment.id %}?next={{ request.path|urlencode }}">
                   <i class="fa-regular fa-trash-can"></i>
                 </a>
               </div>

@@ -84,3 +84,29 @@ tasks:
     desc: Run python manage.py sync_players
     cmd: uv run python manage.py sync_players
   
+  pack:
+    desc: Pack the project into a single .tar
+    deps:
+      - clean
+    cmds:
+      - rm -f ../project.tar
+      - tar -rf ../project.tar config/
+      - tar -rf ../project.tar core/
+      - tar -rf ../project.tar docker/
+      - tar -rf ../project.tar Dockerfile
+      - tar -rf ../project.tar .dockerignore
+      - tar -rf ../project.tar examples/
+      - tar -rf ../project.tar .github/
+      - tar -rf ../project.tar helpers/
+      - tar -rf ../project.tar manage.py
+      - tar -rf ../project.tar package.json
+      - tar -rf ../project.tar pnpm-lock.yaml
+      - tar -rf ../project.tar pyproject.toml
+      - tar -rf ../project.tar README.md
+      - tar -rf ../project.tar scripts/
+      - tar -rf ../project.tar staticfiles/
+      - tar -rf ../project.tar taskfile.yaml
+      - tar -rf ../project.tar templates/
+      - tar -rf ../project.tar tsconfig.json
+      - tar -rf ../project.tar typescript/
+      - tar -rf ../project.tar uv.lock
