@@ -111,6 +111,13 @@ class Player(models.Model):
             return "-"
 
         return self.last_conductor_at.strftime("%d.%m.%Y")
+    
+    @property
+    def alliance_status(self) -> str:
+        if not self.is_member:
+            return "Not Member"
+        else:
+            return self.get_alliance_rank_display() # pyright: ignore[reportAttributeAccessIssue]
 
     class Meta:
         ordering = ["ingame_name"]

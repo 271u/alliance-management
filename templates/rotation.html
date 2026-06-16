@@ -3,7 +3,7 @@
 {% block title %}R4/R5 Rotation | Train Conductors{% endblock %}
 
 {% load static %}
-{% load rank_tags %}
+{% load alliance_status_tags %}
 
 {% block content %}
     <div class="box rotation-card p-5">
@@ -47,7 +47,7 @@
 
                 <span class="rotation-index">{{ entry.position }}</span>
                 <span class="mr-2">{{ entry.player.ingame_name }}</span>
-                {% rank_tag entry.player.get_alliance_rank_display %}
+                {% alliance_status_tag entry.player.alliance_status %}
               </div>
 
               <div class="rotation-actions is-flex is-align-items-center">

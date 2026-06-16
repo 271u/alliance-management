@@ -13,6 +13,9 @@
 
   --r5-font-color: #000;
   --r5-background-color: #70d6ff;
+
+  --not-member-font-color: #fff;
+  --not-member-background-color: red;
 }
 
 .hidden {
@@ -113,6 +116,12 @@ body {
   background-color: var(--r5-background-color);
 }
 
+.is-not-member-tag {
+  color: var(--not-member-font-color);
+  background-color: var(--not-member-background-color);
+  font-weight: bold;
+}
+
 .rotation-header {
   display: flex;
   align-items: center;
@@ -125,4 +134,51 @@ body {
   align-items: center;
   gap: 0.75rem;
   flex-wrap: nowrap;
+}
+
+
+.dashboard-stat-card {
+  min-height: 130px;
+}
+
+.dashboard-stat-card .heading {
+  letter-spacing: 0.06em;
+}
+
+.rank-progress-track {
+  height: 0.65rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #1f2e3e;
+}
+
+.rank-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #70d6ff;
+}
+
+.rotation-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #2b3b4d;
+}
+
+.rotation-preview-row:last-child {
+  border-bottom: 0;
+}
+
+.movement-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #2b3b4d;
+}
+
+.movement-row:last-child {
+  border-bottom: 0;
 }

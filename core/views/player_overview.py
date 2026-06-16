@@ -6,7 +6,7 @@ from core.models import Player
 
 
 @require_http_methods(["GET"])
-def player_view(request):
+def player_overview_view(request):
     show_others = True if request.GET.get("others") == "true" else False
 
     players = (
@@ -21,11 +21,21 @@ def player_view(request):
         .order_by("-alliance_rank", "ingame_name")
     )
 
-    return render(
-        request,
-        "players.html",
-        {
-            "players": players,
-            "show_others": show_others
-        },
-    )
+    if show_others:
+        return render(
+            request,
+            "non_member_overview.html",
+            {
+                "players": players,
+                "show_others": show_others
+            },
+        )
+    else:
+        return render(
+            request,
+            "member_overview.html",
+            {
+                "players": players,
+                "show_others": show_others
+            },
+        )

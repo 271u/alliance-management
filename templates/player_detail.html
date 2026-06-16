@@ -3,7 +3,7 @@
 {% block title %}Player Details | Train Conductors{% endblock %}
 
 {% load static %}
-{% load rank_tags %}
+{% load alliance_status_tags %}
 
 {% block content %}
 <div class="container">
@@ -69,7 +69,7 @@
         <p class="heading">Rank</p>
 
         <div class="player-detail-rank">
-          {% rank_tag player.get_alliance_rank_display %}
+          {% alliance_status_tag player.alliance_status %}
         </div>
       </div>
 

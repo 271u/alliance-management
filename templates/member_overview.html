@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Member Overview | Train Conductors{% endblock %}
+
+{% load static %}
+{% load alliance_status_tags %}
+
+{% block content %}
+
+<div class="tabs">
+  <ul>
+    <li class="is-active"><a><i class="fa-solid fa-user-check mr-2"></i> Members</a></li>
+    <li><a href="{% url 'players' %}?others=true"><i class="fa-solid fa-user-xmark mr-2"></i> Non-Members</a></li>
+    <li><a href="{% url 'player_search' %}"><i class="fa-solid fa-magnifying-glass mr-2"></i> Search</a></li>
+  </ul>
+</div>
+
+<table class="table is-striped is-hoverable">
+  <thead>
+    <tr>
+      <th>Ingame Name</th>
+      <th>Strength</th>
+      <th>🚄 Last Train Conductor</th>
+      <th>📅 Membership Duration</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for player in players %}
+    <tr>
+      <td>
+        <div class="is-flex">
+          {% if player.is_member %}
+          <span class="mr-2">
+            {% alliance_status_tag player.alliance_status %}
+          </span>
+          {% endif %}
+
+          <span>
+            {{ player.ingame_name }}
+          </span>
+        </div>
+      </td>
+      <td>{{ player.strength_string }}</td>
+      <td>{{ player.last_conductor_string }}</td>
+      <td><abbr title="Joined {{ player.joined_at_string }}">{{ player.joined_at_since_string }}</abbr></td>
+
+      <td class="has-text-right">
+        {% if player.active_comment_count %}
+        <a href="{% url 'player_detail' player.id %}#comments">
+          <span class="tag is-dark is-medium">
+            <span style="color:yellow" class="icon-text">
+              <span class="icon">
+                <i class="fa-regular fa-comments"></i>
+              </span>
+              <span>{{ player.active_comment_count }}</span>
+            </span>
+          </span>
+        </a>
+        {% endif %}
+        <a href="{% url 'player_detail' player.id %}">
+          <span class="tag is-dark is-medium">
+            <span class="icon-text">
+              <span class="icon">
+                <i class="fa-solid fa-circle-info"></i>
+              </span>
+              <span>Details</span>
+            </span>
+          </span>
+        </a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td>Nobody found :(</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
