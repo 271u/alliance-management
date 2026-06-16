@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 
@@ -15,6 +16,11 @@ from core.views.api_rotation_add import api_rotation_add
 from core.views.api_rotation_update import api_rotation_update
 from core.views.api_rotation_delete import api_rotation_delete
 from core.views.audit_logs import audit_log_list
+
+admin.site.site_header = settings.APP_NAME
+admin.site.site_title = f"{settings.APP_NAME} admin"
+admin.site.index_title = settings.APP_NAME
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),

@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from core.models.db.player_sync_run import PlayerSyncRun
 
 
@@ -18,4 +20,10 @@ def player_sync_status(request):
     return {
         "latest_player_sync": latest_player_sync,
         "latest_successful_player_sync": latest_successful_player_sync,
+    }
+
+
+def app_branding(request):
+    return {
+        "app_name": settings.APP_NAME,
     }

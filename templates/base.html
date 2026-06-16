@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Train Conductors{% endblock %}</title>
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
 
     <link rel="stylesheet" href="{% static 'core/vendor/fontawesome-7.2.0/css/fontawesome.min.css' %}">
     <link rel="stylesheet" href="{% static 'core/vendor/fontawesome-7.2.0/css/brands.min.css' %}">
@@ -16,11 +16,12 @@
 </head>
 
 <body>
+    {% if user.is_authenticated %}
     <header>
         <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
                 <a class="navbar-item has-text-weight-semibold" href="{% url 'home' %}">
-                    Train Conductors
+                    {{ app_name }}
                 </a>
 
                 <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
@@ -86,7 +87,7 @@
                     </div>
                     {% endif %}
 
-                    {% if user.is_authenticated %}
+
                     <div class="navbar-item">
                         <span class="has-text-grey-light">
                             Logged in as <strong class="has-text-white">{{ user }}</strong>
@@ -101,11 +102,11 @@
                             </button>
                         </form>
                     </div>
-                    {% endif %}
                 </div>
             </div>
         </nav>
     </header>
+    {% endif %}
 
     <main class="section">
         <div class="container">

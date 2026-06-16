@@ -16,3 +16,11 @@ def env_list(name: str, default: str = "") -> list[str]:
         for item in os.getenv(name, default).split(",")
         if item.strip()
     ]
+
+def env_str(name: str, default: str = "") -> str:
+    value = os.getenv(name)
+
+    if value is None:
+        return default
+
+    return value.strip() or default

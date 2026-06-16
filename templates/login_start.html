@@ -1,35 +1,41 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login required</title>
+{% extends "base.html" %}
 
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
-  >
-</head>
-<body>
-  <section class="section">
-    <div class="container">
-      <div class="box">
-        <h1 class="title is-1 mb-4">Train Conductor Management</h1>
+{% block title %}Login | {{ app_name }}{% endblock %}
 
-        <p class="subtitle is-5">
-          You need to login to proceed:
-        </p>
-
-        <form id="oidc-login-form" method="post" action="{{ oidc_login_url }}">
-          {% csrf_token %}
-          <input type="hidden" name="next" value="{{ next_url }}">
-
-          <button class="button is-primary" type="submit">
-            Continue to login
-          </button>
-        </form>
-      </div>
+{% block content %}
+<div class="login-start-page">
+  <div class="login-start-card box has-text-centered">
+    <div class="login-start-icon" aria-hidden="true">
+      <i class="fa-solid fa-train-subway"></i>
     </div>
-  </section>
-</body>
-</html>
+
+    <p class="login-start-kicker has-text-weight-semibold mb-2">
+      All aboard!
+    </p>
+
+    <h1 class="title is-2 mb-3">
+      {{ app_name }}
+    </h1>
+
+    <p class="subtitle is-5 mb-5">
+      Sign in to manage rotations, players, and conductor notes.
+    </p>
+
+    <form id="oidc-login-form" method="post" action="{{ oidc_login_url }}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next_url }}">
+
+      <button class="button is-primary is-medium login-start-button" type="submit">
+        <span class="icon">
+          <i class="fa-solid fa-right-to-bracket"></i>
+        </span>
+        <span>Continue to login</span>
+      </button>
+    </form>
+
+    <p class="help mt-4">
+      Your next stop will open automatically after login.
+    </p>
+  </div>
+</div>
+{% endblock %}

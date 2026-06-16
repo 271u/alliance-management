@@ -2,13 +2,14 @@ from pathlib import Path
 
 import sentry_sdk
 import logging
+from helpers.env import env_bool, env_str, env_list    
 
-from helpers.env import env_bool, env_list
 from config.database import build_database_config
 import os
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+APP_NAME = env_str("APP_NAME", "Alliance Management")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-secret-key")
 DEBUG = env_bool("DJANGO_DEBUG", False)
@@ -107,6 +108,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "core.context_processors.player_sync_status", # Player Sync Status
+                "core.context_processors.app_branding",
             ],
         },
     },
