@@ -4,8 +4,8 @@ FROM node:24-slim AS frontend-builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm i --frozen-lockfile
 
 COPY tsconfig.json ./
 COPY typescript ./typescript
