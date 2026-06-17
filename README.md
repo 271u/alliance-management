@@ -43,7 +43,7 @@ The project is designed as a practical internal alliance operations tool, but th
 ## Repository layout
 
 | Path | Purpose |
-|---|---|
+| --- | --- |
 | `config/settings.py` | Main Django settings, authentication, static files, logging, Sentry, OIDC, and branding configuration. |
 | `config/database.py` | SQLite/PostgreSQL database configuration builder. |
 | `config/urls.py` | URL routes and Django admin branding. |
@@ -143,7 +143,7 @@ task javascript:compile
 The Taskfile loads `.env` automatically and provides the recommended project workflows.
 
 | Task | What it does |
-|---|---|
+| --- | --- |
 | `task install` | Installs Python and JavaScript dependencies. |
 | `task python:install-dependencies` | Runs `uv sync`. |
 | `task javascript:install-dependencies` | Runs `pnpm i --frozen-lockfile`. |
@@ -166,7 +166,7 @@ Boolean values are parsed as true when set to `1`, `true`, `yes`, or `on`. Any o
 ### Application and Django settings
 
 | Variable | Default | Required | Description |
-|---|---:|---:|---|
+| --- | ---: | ---: | --- |
 | `APP_NAME` | `Alliance Management` | No | Display name used for page branding and Django admin titles. |
 | `DJANGO_SECRET_KEY` | `dev-only-secret-key` | Yes in production | Django secret key. Use a long random secret outside local development. |
 | `DJANGO_DEBUG` | `False` | No | Enables Django debug mode when true. Keep false in production. |
@@ -179,7 +179,7 @@ Boolean values are parsed as true when set to `1`, `true`, `yes`, or `on`. Any o
 ### Database settings
 
 | Variable | Default | Required | Description |
-|---|---:|---:|---|
+| --- | ---: | ---: | --- |
 | `DATABASE_ENGINE` | `sqlite` | No | Database backend. Supported values are `sqlite`, `postgres`, and `postgresql`. |
 | `SQLITE_PATH` | `data/db.sqlite3` under the project root | No, SQLite only | SQLite database file path. In Docker, mount `/app/data` if you use the default. |
 | `POSTGRES_DB` | none | Yes, PostgreSQL only | PostgreSQL database name. |
@@ -192,7 +192,7 @@ Boolean values are parsed as true when set to `1`, `true`, `yes`, or `on`. Any o
 ### OIDC authentication settings
 
 | Variable | Default | Required | Description |
-|---|---:|---:|---|
+| --- | ---: | ---: | --- |
 | `OIDC_PROVIDER_NAME` | `OIDC Login` | No | Display name shown for the OpenID Connect provider. |
 | `OIDC_CLIENT_ID` | empty | Yes | Client ID from your OIDC provider. |
 | `OIDC_CLIENT_SECRET` | empty | Yes | Client secret from your OIDC provider. |
@@ -220,7 +220,7 @@ https://alliance.example.com/accounts/oidc/oidc/login/callback/
 Group behavior:
 
 | OIDC membership | Result |
-|---|---|
+| --- | --- |
 | Member of any `OIDC_USER_GROUP` | User can log in. |
 | Member of any `OIDC_ADMIN_GROUP` | User can log in and becomes Django staff/superuser. |
 | Member of neither | Access is denied with HTTP 403. |
@@ -228,7 +228,7 @@ Group behavior:
 ### LastWar Tools API settings
 
 | Variable | Default | Required | Description |
-|---|---:|---:|---|
+| --- | ---: | ---: | --- |
 | `LASTWAR_TOOLS_BASEURL` | `https://api.lastwar.tools` | No | Base URL for the LastWar Tools API. Trailing slashes are removed automatically. |
 | `LASTWAR_TOOLS_APIKEY` | empty | Yes for sync | API key sent as the `X-API-Key` header. |
 | `LASTWAR_TOOLS_ALLIANCEID` | empty | Yes for sync | Alliance ID used in the `/alliance/{alliance_id}/members` API request. |
@@ -238,7 +238,7 @@ The sync client requests alliance members sorted by power in descending order an
 ### Container and sync worker settings
 
 | Variable | Default | Required | Description |
-|---|---:|---:|---|
+| --- | ---: | ---: | --- |
 | `RUN_MIGRATIONS` | `1` | No | Used by `docker/entrypoint.sh`. When `1`, the container runs `python manage.py migrate --noinput` before starting the command. Set to `0` for worker containers that should not run migrations. |
 | `PLAYER_SYNC_INTERVAL_SECONDS` | `10800` | No | Used by `docker/player_sync.sh`. Time between sync runs. Default is 3 hours. |
 | `PLAYER_SYNC_INITIAL_DELAY_SECONDS` | `120` | No | Used by `docker/player_sync.sh`. Delay before the first sync run, useful while the web app and database become healthy. |
@@ -354,7 +354,7 @@ PLAYER_SYNC_INITIAL_DELAY_SECONDS=120
 ## Routes
 
 | Route | Purpose |
-|---|---|
+| --- | --- |
 | `/healthz/` | Public health check endpoint. Verifies database connectivity. |
 | `/login/` | Custom OIDC login start page. |
 | `/accounts/` | django-allauth routes. |

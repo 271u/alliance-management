@@ -144,3 +144,7 @@ GitHub.sublime-settings
 
 # NodeJS cache
 node_modules/
+
+
+staticfiles/
+core/static/core/js/*

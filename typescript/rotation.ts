@@ -204,3 +204,13 @@ async function buttonSaveAction(): Promise<void> {
 
   window.location.reload();
 }
+
+
+// Wait for the DOM to be ready, then hook up the click event
+document.addEventListener("DOMContentLoaded", () => {
+  const saveButton = document.getElementById("button-save") as HTMLButtonElement | null;
+  if (saveButton) saveButton.addEventListener("click", buttonSaveAction)
+
+  const discardButton = document.getElementById("button-discard") as HTMLInputElement | null;
+  if (discardButton) discardButton.addEventListener("input", buttonDiscardAction)
+});
