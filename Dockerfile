@@ -4,12 +4,14 @@ FROM node:24-slim AS frontend-builder
 
 WORKDIR /app
 
+RUN corepack enable
+
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm i --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 COPY tsconfig.json ./
 COPY typescript ./typescript
-RUN npm run build:ts
+RUN pnpm run build:ts
 
 
 FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim AS builder
