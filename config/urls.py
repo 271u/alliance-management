@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 
+from core.views.health import healthz
 from core.views.home import home
 from core.views.login import login_start
 from core.views.comment_delete import comment_delete_view
@@ -23,6 +24,7 @@ admin.site.index_title = settings.APP_NAME
 
 
 urlpatterns = [
+    path("healthz/", healthz, name="healthz"),
     path("admin/", admin.site.urls),
 
     # Public custom login entry page

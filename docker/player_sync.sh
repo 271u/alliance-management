@@ -2,7 +2,7 @@
 set -eu
 
 interval="${PLAYER_SYNC_INTERVAL_SECONDS:-10800}"
-initial_delay="${PLAYER_SYNC_INITIAL_DELAY_SECONDS:-60}"
+initial_delay="${PLAYER_SYNC_INITIAL_DELAY_SECONDS:-120}"
 
 echo "Player sync worker starting."
 echo "Initial delay: ${initial_delay}s"
