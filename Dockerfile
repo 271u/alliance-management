@@ -44,7 +44,7 @@ RUN addgroup --gid 10001 --system django \
 
 COPY --from=builder /app /app
 
-RUN chmod +x /app/docker/entrypoint.sh \
+RUN chmod +x /app/docker/*.sh \
     && chown -R django:django /app
 
 USER django

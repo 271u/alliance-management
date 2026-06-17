@@ -67,7 +67,7 @@ tasks:
   clean:
     desc: Cleans up Python bytecode, .venv and node_modules
     cmds:
-      - py3clean .
+      - pyclean .
       - rm -rf node_modules/
       - rm -rf .venv/
 

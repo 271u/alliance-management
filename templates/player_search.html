@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Player List | {{ app_name }}{% endblock %}
+{% block title %}Player Search | {{ app_name }}{% endblock %}
 
 {% load static %}
 {% load alliance_status_tags %}
@@ -18,8 +18,14 @@
 <form method="get" action="">
   <div class="field has-addons">
     <div class="control is-expanded">
-      <input id="player-search" class="input" type="search" name="q" value="{{ query }}"
-        placeholder="Search by player name">
+      <input
+        id="player-search"
+        class="input"
+        type="search"
+        name="q"
+        value="{{ query }}"
+        placeholder="Search by player name"
+      >
     </div>
     <div class="control">
       <button class="button is-info">
@@ -32,16 +38,62 @@
 <hr>
 
 {% if players %}
-{% for player in players %}
-<a href="{% url 'player_detail' player.id %}">
+<div class="player-search-results">
+  {% for player in players %}
+  <a class="box player-search-card mb-0" href="{% url 'player_detail' player.id %}">
+    <div class="player-search-card-main">
+      <div class="player-search-card-header">
+        <span class="player-search-card-name">
+          {{ player.ingame_name }}
+        </span>
 
-  <nav class="panel">
-    <div class="panel-block">
-      {{ player.ingame_name }}
+        {% alliance_status_tag player.alliance_status %}
+      </div>
+
+      <div class="player-search-card-meta">
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fa-solid fa-bolt"></i>
+          </span>
+          <span>{{ player.strength_string }}</span>
+        </span>
+
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fa-solid fa-calendar-plus"></i>
+          </span>
+          <span>
+            Joined:
+            <abbr title="{{ player.joined_at_string }}">
+              {{ player.joined_at_since_string }}
+            </abbr>
+          </span>
+        </span>
+
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fa-regular fa-comments"></i>
+          </span>
+          <span>
+            {{ player.active_comment_count }} comment{{ player.active_comment_count|pluralize }}
+          </span>
+        </span>
+      </div>
     </div>
-  </nav>
-</a>
-{% endfor %}
+
+    <div class="player-search-card-action">
+      <span class="tag is-dark is-medium">
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fa-solid fa-circle-info"></i>
+          </span>
+          <span>Details</span>
+        </span>
+      </span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
 {% else %}
 <div class="box">
   {% if query %}
@@ -49,9 +101,7 @@
   {% else %}
   Please search to display results
   {% endif %}
-
 </div>
 {% endif %}
-
 
 {% endblock %}

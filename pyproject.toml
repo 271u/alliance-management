@@ -1,8 +1,8 @@
 [project]
 # https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
-name = "train-conductors"
+name = "alliance-management"
 version = "0.0.1"
-description = "Train Conductor tool for 271U"
+description = "Alliance Management tool for managing Last War alliances"
 readme = "README.md"
 requires-python = ">=3.13,<4"
 dependencies = [
