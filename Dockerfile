@@ -33,7 +33,7 @@ RUN uv sync --locked --no-dev
 RUN DJANGO_DEBUG=0 DJANGO_SECRET_KEY=build-time-secret uv run python manage.py collectstatic --noinput
 
 
-FROM python:3.13-slim-trixie AS runtime
+FROM python:3.14-slim-trixie AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
