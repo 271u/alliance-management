@@ -7,63 +7,79 @@ let previewObjectUrls: string[] = [];
 let selectedImageFiles: File[] = [];
 
 async function setError(message: string) {
-  const errorArticle = document.getElementById("error-message-article") as HTMLElement | null;
-  const errorHeader = document.getElementById("error-message-header") as HTMLParagraphElement | null;
-  const errorMessage = document.getElementById("error-message-body") as HTMLDivElement | null;
+  const errorArticle = document.getElementById(
+    "error-message-article",
+  ) as HTMLElement | null;
+  const errorHeader = document.getElementById(
+    "error-message-header",
+  ) as HTMLParagraphElement | null;
+  const errorMessage = document.getElementById(
+    "error-message-body",
+  ) as HTMLDivElement | null;
 
-  if (
-    errorArticle == null ||
-    errorHeader == null ||
-    errorMessage == null
-  ) {
-    return
+  if (errorArticle == null || errorHeader == null || errorMessage == null) {
+    return;
   }
 
-  errorArticle.classList.remove("hidden")
-  errorMessage.innerHTML = message
+  errorArticle.classList.remove("hidden");
+  errorMessage.innerHTML = message;
   document.body.scrollTop = 0;
   document.documentElement.scrollTop = 0;
 }
 
 function validateInputs() {
-  const addButton = document.getElementById("button-submit") as HTMLButtonElement | null;
-  const messageInput = document.getElementById("message") as HTMLInputElement | null;
+  const addButton = document.getElementById(
+    "button-submit",
+  ) as HTMLButtonElement | null;
+  const messageInput = document.getElementById(
+    "message",
+  ) as HTMLInputElement | null;
 
   if (!addButton) return;
 
   if (messageInput && messageInput.value.length >= 3)
-    addButton.disabled = false
-  else
-    addButton.disabled = true
+    addButton.disabled = false;
+  else addButton.disabled = true;
 }
 
 async function sendCommentPost() {
-  const addButton = document.getElementById("button-submit") as HTMLButtonElement | null;
-  const messageInput = document.getElementById("message") as HTMLInputElement | null;
-  const targetIdInput = document.getElementById("target-id") as HTMLInputElement | null;
-  const targetTypeInput = document.getElementById("target-type") as HTMLInputElement | null;
-  const imageInput = document.getElementById("comment-images") as HTMLInputElement | null;
+  const addButton = document.getElementById(
+    "button-submit",
+  ) as HTMLButtonElement | null;
+  const messageInput = document.getElementById(
+    "message",
+  ) as HTMLInputElement | null;
+  const targetIdInput = document.getElementById(
+    "target-id",
+  ) as HTMLInputElement | null;
+  const targetTypeInput = document.getElementById(
+    "target-type",
+  ) as HTMLInputElement | null;
+  const imageInput = document.getElementById(
+    "comment-images",
+  ) as HTMLInputElement | null;
 
   let errors: string[] = [];
 
-  if (addButton == null) errors.push("'button-submit' not found")
-  if (messageInput == null) errors.push("'message' not found")
-  if (targetIdInput == null) errors.push("'target-id' not found")
-  if (targetTypeInput == null) errors.push("'target-type' not found")
-  if (imageInput == null) errors.push("'comment-images' not found")
+  if (addButton == null) errors.push("'button-submit' not found");
+  if (messageInput == null) errors.push("'message' not found");
+  if (targetIdInput == null) errors.push("'target-id' not found");
+  if (targetTypeInput == null) errors.push("'target-type' not found");
+  if (imageInput == null) errors.push("'comment-images' not found");
 
   if (errors.length > 0) {
-    let errMsg = "Something weird happened, and you should never see this, please inform the developer haha (386bc7e6-d05c-40ad-8a27-6f3d4f842092)<br>The following error(s) occurred:";
+    let errMsg =
+      "Something weird happened, and you should never see this, please inform the developer haha (386bc7e6-d05c-40ad-8a27-6f3d4f842092)<br>The following error(s) occurred:";
     errMsg += "<ul>";
 
-    errors.forEach(element => {
+    errors.forEach((element) => {
       errMsg += "<li>" + element + "</li>";
     });
 
     errMsg += "</ul>";
 
     await setError(errMsg);
-    return
+    return;
   }
 
   if (!addButton) return;
@@ -72,10 +88,10 @@ async function sendCommentPost() {
   if (!targetTypeInput) return;
   if (!imageInput) return;
 
-  addButton.classList.add("is-loading")
-  addButton.disabled = true
-  messageInput.disabled = true
-  imageInput.disabled = true
+  addButton.classList.add("is-loading");
+  addButton.disabled = true;
+  messageInput.disabled = true;
+  imageInput.disabled = true;
 
   const body = new FormData();
   body.append("message", messageInput.value);
@@ -88,39 +104,60 @@ async function sendCommentPost() {
     }
   }
 
-  const response = await fetch("/api/comment/add", {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: body,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch("/api/comment/add", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: body,
+    });
+  } catch (error) {
+    // Network errors throw a TypeError in the fetch API
+    if (error instanceof TypeError) {
+      setError("Failed to create new comment: Couldn't reach server. Please reload the page and try again in a few minutes. If the issue persists, contact your website admin.")
+      return
+    } else {
+      // Catches any other unexpected errors (e.g., issues running getCsrfToken())
+      console.error("An unexpected error occurred:", error);
+      return
+    }
+  }
+
 
   if (response.status != 201) {
-    let responseBody = await response.json()
+    let responseBody = await response.json();
 
     if (responseBody.message)
-      setError("Failed to create new comment: " + responseBody.message)
+      setError("Failed to create new comment: " + responseBody.message);
     else
-      setError("Failed to create new comment, and server did not give a reason why")
+      setError(
+        "Failed to create new comment, and server did not give a reason why",
+      );
 
-    addButton.classList.remove("is-loading")
-    addButton.disabled = false
-    messageInput.disabled = false
-    imageInput.disabled = false
+    addButton.classList.remove("is-loading");
+    addButton.disabled = false;
+    messageInput.disabled = false;
+    imageInput.disabled = false;
     return;
   }
 
-  messageInput.value = ""
-  imageInput.value = ""
-  clearImagePreview()
+  messageInput.value = "";
+  imageInput.value = "";
+  clearImagePreview();
 
   window.location.reload();
 }
 
 function clearImagePreview() {
-  const previewWrapper = document.getElementById("comment-image-preview-wrapper") as HTMLElement | null;
-  const previewContainer = document.getElementById("comment-image-preview") as HTMLDivElement | null;
+  const previewWrapper = document.getElementById(
+    "comment-image-preview-wrapper",
+  ) as HTMLElement | null;
+  const previewContainer = document.getElementById(
+    "comment-image-preview",
+  ) as HTMLDivElement | null;
 
   previewObjectUrls.forEach((url) => URL.revokeObjectURL(url));
   previewObjectUrls = [];
@@ -136,7 +173,9 @@ function clearImagePreview() {
 }
 
 function syncImageInputFiles() {
-  const imageInput = document.getElementById("comment-images") as HTMLInputElement | null;
+  const imageInput = document.getElementById(
+    "comment-images",
+  ) as HTMLInputElement | null;
 
   if (!imageInput) {
     return;
@@ -158,8 +197,12 @@ function removeImageFromPreview(index: number) {
 }
 
 function renderSelectedImagePreview() {
-  const previewWrapper = document.getElementById("comment-image-preview-wrapper") as HTMLElement | null;
-  const previewContainer = document.getElementById("comment-image-preview") as HTMLDivElement | null;
+  const previewWrapper = document.getElementById(
+    "comment-image-preview-wrapper",
+  ) as HTMLElement | null;
+  const previewContainer = document.getElementById(
+    "comment-image-preview",
+  ) as HTMLDivElement | null;
 
   if (!previewWrapper || !previewContainer) {
     return;
@@ -187,7 +230,14 @@ function renderSelectedImagePreview() {
 
     const removeButton = document.createElement("button");
     removeButton.type = "button";
-    removeButton.classList.add("button", "is-small", "is-danger", "is-light", "mt-2", "is-fullwidth");
+    removeButton.classList.add(
+      "button",
+      "is-small",
+      "is-danger",
+      "is-light",
+      "mt-2",
+      "is-fullwidth",
+    );
     removeButton.innerText = "Remove";
     removeButton.addEventListener("click", () => removeImageFromPreview(index));
 
@@ -206,7 +256,9 @@ function renderSelectedImagePreview() {
 }
 
 async function renderImagePreview() {
-  const imageInput = document.getElementById("comment-images") as HTMLInputElement | null;
+  const imageInput = document.getElementById(
+    "comment-images",
+  ) as HTMLInputElement | null;
 
   if (!imageInput) {
     return;
@@ -223,7 +275,9 @@ async function renderImagePreview() {
   }
 
   if (files.length > MAX_IMAGE_PREVIEW_FILES) {
-    await setError(`You can upload at most ${MAX_IMAGE_PREVIEW_FILES} images per comment.`);
+    await setError(
+      `You can upload at most ${MAX_IMAGE_PREVIEW_FILES} images per comment.`,
+    );
     imageInput.value = "";
     clearImagePreview();
     return;
@@ -233,14 +287,18 @@ async function renderImagePreview() {
 
   for (const file of files) {
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      await setError(`${file.name} is not an allowed image type. Allowed: JPG, PNG or WEBP.`);
+      await setError(
+        `${file.name} is not an allowed image type. Allowed: JPG, PNG or WEBP.`,
+      );
       imageInput.value = "";
       clearImagePreview();
       return;
     }
 
     if (file.size > maxSizeBytes) {
-      await setError(`${file.name} is too large. Maximum size is ${MAX_IMAGE_PREVIEW_SIZE_MB} MB.`);
+      await setError(
+        `${file.name} is too large. Maximum size is ${MAX_IMAGE_PREVIEW_SIZE_MB} MB.`,
+      );
       imageInput.value = "";
       clearImagePreview();
       return;
@@ -252,11 +310,17 @@ async function renderImagePreview() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const addButton = document.getElementById("button-submit") as HTMLButtonElement | null;
-  const messageInput = document.getElementById("message") as HTMLInputElement | null;
-  const imageInput = document.getElementById("comment-images") as HTMLInputElement | null;
+  const addButton = document.getElementById(
+    "button-submit",
+  ) as HTMLButtonElement | null;
+  const messageInput = document.getElementById(
+    "message",
+  ) as HTMLInputElement | null;
+  const imageInput = document.getElementById(
+    "comment-images",
+  ) as HTMLInputElement | null;
 
-  if (addButton) addButton.addEventListener("click", sendCommentPost)
-  if (messageInput) messageInput.addEventListener("input", validateInputs)
-  if (imageInput) imageInput.addEventListener("change", renderImagePreview)
+  if (addButton) addButton.addEventListener("click", sendCommentPost);
+  if (messageInput) messageInput.addEventListener("input", validateInputs);
+  if (imageInput) imageInput.addEventListener("change", renderImagePreview);
 });

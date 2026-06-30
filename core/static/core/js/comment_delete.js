@@ -1,60 +1,58 @@
 import { getCsrfToken } from "./misc.js";
-async function deleteComment() {
-    const idInput = document.getElementById("id-input");
-    if (!idInput)
-        return;
-    const deleteButton = document.getElementById("delete-button");
-    if (!deleteButton)
-        return;
-    deleteButton.classList.add("is-loading");
-    deleteButton.disabled = true;
-    const urlParams = new URLSearchParams(window.location.search);
-    const next = urlParams.get('next');
-    const url = "/api/comment/delete/" + idInput.value;
-    console.log(url);
-    const response = await fetch(url, {
-        method: "DELETE",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCsrfToken(),
-        },
-    });
-    console.log(response.status);
-    if (response.status != 204) {
-        let responseBody = await response.json();
-        let errMsg = "Failed to delete comment: ";
-        if (responseBody.message)
-            errMsg += responseBody.message;
-        else
-            errMsg += "Unknown error";
-        deleteButton.classList.remove("is-loading");
-        deleteButton.disabled = false;
-        const errorArticle = document.getElementById("error-message-article");
-        const errorHeader = document.getElementById("error-message-header");
-        const errorMessage = document.getElementById("error-message-body");
-        if (errorArticle == null ||
-            errorHeader == null ||
-            errorMessage == null) {
-            return;
-        }
-        errorArticle.classList.remove("hidden");
-        errorMessage.innerText = errMsg;
+function showError(message) {
+    const errorArticle = document.getElementById("error-message-article");
+    const errorMessage = document.getElementById("error-message-body");
+    if (!errorArticle || !errorMessage) {
         return;
     }
-    handleNext(next);
-    return;
+    errorArticle.classList.remove("hidden");
+    errorMessage.innerText = message;
 }
 function handleNext(next) {
-    console.log("Next: " + next);
     if (!next || next === "") {
         document.location.href = "/";
         return;
     }
     document.location.href = next;
 }
-// Wait for the DOM to be ready, then hook up the click event
-document.addEventListener("DOMContentLoaded", () => {
+async function deleteComment(event) {
+    event.preventDefault();
+    const idInput = document.getElementById("id-input");
+    const nextUrlInput = document.getElementById("next-url-input");
     const deleteButton = document.getElementById("delete-button");
-    if (deleteButton)
-        deleteButton.addEventListener("click", deleteComment);
+    if (!idInput || !deleteButton) {
+        showError("Cannot delete comment because the page is missing required fields.");
+        return;
+    }
+    deleteButton.classList.add("is-loading");
+    deleteButton.disabled = true;
+    const response = await fetch(`/api/comment/delete/${idInput.value}`, {
+        method: "DELETE",
+        headers: {
+            "X-CSRFToken": getCsrfToken(),
+        },
+    });
+    if (response.status !== 204) {
+        let errMsg = "Failed to delete comment.";
+        try {
+            const responseBody = await response.json();
+            if (responseBody.message) {
+                errMsg = `Failed to delete comment: ${responseBody.message}`;
+            }
+        }
+        catch {
+            errMsg = "Failed to delete comment, and the server did not return a JSON error message.";
+        }
+        deleteButton.classList.remove("is-loading");
+        deleteButton.disabled = false;
+        showError(errMsg);
+        return;
+    }
+    handleNext(nextUrlInput?.value ?? null);
+}
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("delete-comment-form");
+    if (form) {
+        form.addEventListener("submit", deleteComment);
+    }
 });

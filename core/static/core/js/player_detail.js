@@ -7,9 +7,7 @@ async function setError(message) {
     const errorArticle = document.getElementById("error-message-article");
     const errorHeader = document.getElementById("error-message-header");
     const errorMessage = document.getElementById("error-message-body");
-    if (errorArticle == null ||
-        errorHeader == null ||
-        errorMessage == null) {
+    if (errorArticle == null || errorHeader == null || errorMessage == null) {
         return;
     }
     errorArticle.classList.remove("hidden");
@@ -47,7 +45,7 @@ async function sendCommentPost() {
     if (errors.length > 0) {
         let errMsg = "Something weird happened, and you should never see this, please inform the developer haha (386bc7e6-d05c-40ad-8a27-6f3d4f842092)<br>The following error(s) occurred:";
         errMsg += "<ul>";
-        errors.forEach(element => {
+        errors.forEach((element) => {
             errMsg += "<li>" + element + "</li>";
         });
         errMsg += "</ul>";
@@ -77,13 +75,28 @@ async function sendCommentPost() {
             body.append("images", image);
         }
     }
-    const response = await fetch("/api/comment/add", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": getCsrfToken(),
-        },
-        body: body,
-    });
+    let response;
+    try {
+        response = await fetch("/api/comment/add", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCsrfToken(),
+            },
+            body: body,
+        });
+    }
+    catch (error) {
+        // Network errors throw a TypeError in the fetch API
+        if (error instanceof TypeError) {
+            setError("Failed to create new comment: Couldn't reach server. Please reload the page and try again in a few minutes. If the issue persists, contact your website admin.");
+            return;
+        }
+        else {
+            // Catches any other unexpected errors (e.g., issues running getCsrfToken())
+            console.error("An unexpected error occurred:", error);
+            return;
+        }
+    }
     if (response.status != 201) {
         let responseBody = await response.json();
         if (responseBody.message)

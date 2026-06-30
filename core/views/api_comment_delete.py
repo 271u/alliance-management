@@ -1,13 +1,21 @@
 import logging
 
-from django.http import HttpResponse, JsonResponse, HttpResponseNotAllowed
+from django.http import HttpResponse
 from django.views.decorators.http import require_http_methods
-from core.models.db.comment import Comment
-from core.models.api.comment_api import ApiCommentModel
+
 from core.helpers import JsonErrorMessage
+from core.models.db.comment import Comment
+
 
 @require_http_methods(["DELETE"])
 def api_comment_delete(request, id):
+    if not request.user.is_staff:
+        logging.error(
+            "Failed to soft delete comment %s: User %s is not staff.",
+            id,
+            request.user,
+        )
+        return JsonErrorMessage("You are not allowed to delete this comment.", 403)
 
     try:
         comment = Comment.objects.get(
@@ -15,15 +23,15 @@ def api_comment_delete(request, id):
             deleted_at__isnull=True,
         )
     except Comment.DoesNotExist:
-        logging.error(f"Failed to execute comment deletion request for ID {id} by {request.user}: Comment not found")
-        return JsonErrorMessage(f"Comment with ID {id} not found!")
-    
-    if not request.user.is_staff:
-        logging.error(f"Failed to soft delete comment {id}: User {request.user} is not staff!")
-        return JsonErrorMessage("You are not allowed to delete this comment.", 403)
+        logging.error(
+            "Failed to execute comment deletion request for ID %s by %s: Comment not found.",
+            id,
+            request.user,
+        )
+        return JsonErrorMessage(f"Comment with ID {id} not found!", 404)
 
     comment.soft_delete(request.user)
 
-    logging.debug(f"Successfully soft deleted comment with id={id}")
+    logging.debug("Successfully soft deleted comment with id=%s", id)
 
     return HttpResponse(status=204)
