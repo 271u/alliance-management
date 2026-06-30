@@ -131,3 +131,12 @@ async function buttonSaveAction() {
     }
     window.location.reload();
 }
+// Wait for the DOM to be ready, then hook up the click event
+document.addEventListener("DOMContentLoaded", () => {
+    const saveButton = document.getElementById("button-save");
+    if (saveButton)
+        saveButton.addEventListener("click", buttonSaveAction);
+    const discardButton = document.getElementById("button-discard");
+    if (discardButton)
+        discardButton.addEventListener("input", buttonDiscardAction);
+});

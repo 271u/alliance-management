@@ -13,6 +13,8 @@ from .models.db.past_username import PastUsername
 from .models.db.rotation import TrainRotationEntry
 from .models.db.comment import Comment
 from .models.db.player_sync_run import PlayerSyncRun
+from .models.db.stored_image import StoredImage
+from .models.db.image_attachment import ImageAttachment
 
 
 
@@ -317,3 +319,134 @@ class PlayerSyncRunAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
+
+
+@admin.register(StoredImage)
+class StoredImageAdmin(admin.ModelAdmin):
+    list_display = (
+        "preview_small",
+        "original_filename",
+        "mime_type",
+        "size",
+        "width",
+        "height",
+        "uploaded_by",
+        "created_at",
+        "deleted_at",
+    )
+
+    list_filter = (
+        "mime_type",
+        "created_at",
+        "deleted_at",
+    )
+
+    search_fields = (
+        "original_filename",
+        "uploaded_by__username",
+        "uploaded_by__email",
+    )
+
+    readonly_fields = (
+        "preview_large",
+        "id",
+        "file",
+        "original_filename",
+        "mime_type",
+        "size",
+        "width",
+        "height",
+        "uploaded_by",
+        "created_at",
+        "deleted_at",
+        "deleted_by",
+    )
+
+    ordering = ("-created_at",)
+
+    @admin.display(description="Preview")
+    def preview_small(self, obj: StoredImage):
+        if not obj.id:
+            return "-"
+
+        url = reverse("image_file", args=[obj.id])
+
+        return format_html(
+            '<img src="{}" style="max-width: 80px; max-height: 80px; object-fit: cover; border-radius: 6px;" />',
+            url,
+        )
+
+    @admin.display(description="Image preview")
+    def preview_large(self, obj: StoredImage):
+        if not obj.id:
+            return "Save the image first to see a preview."
+
+        url = reverse("image_file", args=[obj.id])
+
+        return format_html(
+            '<a href="{0}" target="_blank" rel="noopener noreferrer">'
+            '<img src="{0}" style="max-width: 100%; max-height: 600px; object-fit: contain; border-radius: 8px;" />'
+            "</a>",
+            url,
+        )
+
+
+@admin.register(ImageAttachment)
+class ImageAttachmentAdmin(admin.ModelAdmin):
+    list_display = (
+        "preview_small",
+        "image",
+        "content_type",
+        "object_id",
+        "attached_by",
+        "created_at",
+    )
+
+    list_filter = (
+        "content_type",
+        "created_at",
+    )
+
+    search_fields = (
+        "image__original_filename",
+        "object_id",
+        "attached_by__username",
+        "attached_by__email",
+    )
+
+    readonly_fields = (
+        "preview_large",
+        "image",
+        "content_type",
+        "object_id",
+        "attached_by",
+        "created_at",
+    )
+
+    ordering = ("-created_at",)
+
+    @admin.display(description="Preview")
+    def preview_small(self, obj: ImageAttachment):
+        if not obj.image_id: # pyright: ignore[reportAttributeAccessIssue]
+            return "-"
+
+        url = reverse("image_file", args=[obj.image_id]) # pyright: ignore[reportAttributeAccessIssue]
+
+        return format_html(
+            '<img src="{}" style="max-width: 80px; max-height: 80px; object-fit: cover; border-radius: 6px;" />',
+            url,
+        )
+
+    @admin.display(description="Image preview")
+    def preview_large(self, obj: ImageAttachment):
+        if not obj.image_id: # pyright: ignore[reportAttributeAccessIssue]
+            return "-"
+
+        url = reverse("image_file", args=[obj.image_id]) # pyright: ignore[reportAttributeAccessIssue]
+
+        return format_html(
+            '<a href="{0}" target="_blank" rel="noopener noreferrer">'
+            '<img src="{0}" style="max-width: 100%; max-height: 600px; object-fit: contain; border-radius: 8px;" />'
+            "</a>",
+            url,
+        )

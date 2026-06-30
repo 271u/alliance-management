@@ -2,7 +2,7 @@ from pathlib import Path
 
 import sentry_sdk
 import logging
-from helpers.env import env_bool, env_str, env_list    
+from helpers.env import env_bool, env_str, env_list, env_int
 
 from config.database import build_database_config
 import os
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
     # Optional but useful for admin/site-aware setups
     "django.contrib.sites",
+    "storages",
 
     "allauth",
     "allauth.account",
@@ -88,14 +89,60 @@ STATICFILES_STORAGE_BACKEND = (
     else "whitenoise.storage.CompressedManifestStaticFilesStorage"
 )
 
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+UPLOAD_STORAGE_BACKEND = env_str("UPLOAD_STORAGE_BACKEND", "filesystem")
+
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": MEDIA_ROOT,
+            "base_url": MEDIA_URL,
+        },
     },
     "staticfiles": {
         "BACKEND": STATICFILES_STORAGE_BACKEND,
     },
 }
+
+if UPLOAD_STORAGE_BACKEND == "s3":
+    s3_options = {
+        "bucket_name": env_str("AWS_STORAGE_BUCKET_NAME"),
+        "region_name": env_str("AWS_S3_REGION_NAME", "eu-central-1"),
+        "location": env_str("AWS_LOCATION", "media"),
+        "default_acl": None,
+        "querystring_auth": True,
+        "querystring_expire": env_int("AWS_QUERYSTRING_EXPIRE", 60),
+        "file_overwrite": False,
+    }
+
+    aws_access_key_id = env_str("AWS_ACCESS_KEY_ID")
+    aws_secret_access_key = env_str("AWS_SECRET_ACCESS_KEY")
+    aws_s3_endpoint_url = env_str("AWS_S3_ENDPOINT_URL")
+    aws_s3_addressing_style = env_str("AWS_S3_ADDRESSING_STYLE")
+
+    if aws_access_key_id:
+        s3_options["access_key"] = aws_access_key_id
+
+    if aws_secret_access_key:
+        s3_options["secret_key"] = aws_secret_access_key
+
+    if aws_s3_endpoint_url:
+        s3_options["endpoint_url"] = aws_s3_endpoint_url
+
+    if aws_s3_addressing_style:
+        s3_options["addressing_style"] = aws_s3_addressing_style
+
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": s3_options,
+    }
+
+COMMENT_IMAGE_MAX_FILES = env_int("COMMENT_IMAGE_MAX_FILES", 5)
+COMMENT_IMAGE_MAX_SIZE_MB = env_int("COMMENT_IMAGE_MAX_SIZE_MB", 5)
+COMMENT_IMAGE_MAX_PIXELS = env_int("COMMENT_IMAGE_MAX_PIXELS", 20_000_000)
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG

@@ -106,6 +106,20 @@
             </div>
         </nav>
     </header>
+
+    {% if messages %}
+    <section class="section py-3">
+        <div class="container">
+            {% for message in messages %}
+            <article class="message {% if message.tags %}is-{{ message.tags }}{% else %}is-info{% endif %}">
+                <div class="message-body">
+                    {{ message }}
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
     {% endif %}
 
     <main class="section">

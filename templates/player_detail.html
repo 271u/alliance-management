@@ -142,6 +142,20 @@
           <div class="field">
             <textarea class="textarea" placeholder="e.g. Hello world" id="message"></textarea>
           </div>
+
+          <div class="field">
+            <label class="label" for="comment-images">Images</label>
+            <div class="control">
+              <input class="input" type="file" id="comment-images" name="images"
+                accept="image/png,image/jpeg,image/webp" multiple>
+            </div>
+            <p class="help">Optional. JPG, PNG or WEBP. Up to 5 images.</p>
+          </div>
+
+          <div id="comment-image-preview-wrapper" class="comment-image-preview-wrapper hidden">
+            <p class="label mb-2">Preview</p>
+            <div id="comment-image-preview" class="comment-image-preview"></div>
+          </div>
           <div class="control">
             <input class="input" type="hidden" id="target-id" value="{{ player.id }}" disabled />
             <input class="input" type="hidden" id="target-type" value="player" disabled />
@@ -174,7 +188,8 @@
                   </small>
                 </div>
 
-                <a class="button is-small is-danger" href="{% url 'comment_delete' comment.id %}?next={{ request.path|urlencode }}">
+                <a class="button is-small is-danger"
+                  href="{% url 'comment_delete' comment.id %}?next={{ request.path|urlencode }}">
                   <i class="fa-regular fa-trash-can"></i>
                 </a>
               </div>
@@ -182,6 +197,19 @@
               <p>
                 {{ comment.text|linebreaksbr }}
               </p>
+
+              {% if comment.image_attachments.all %}
+              <div class="comment-images mt-3">
+                {% for attachment in comment.image_attachments.all %}
+                <figure class="image comment-image">
+                  <a href="{% url 'image_file' attachment.image.id %}" target="_blank" rel="noopener noreferrer">
+                    <img src="{% url 'image_file' attachment.image.id %}" alt="{{ attachment.image.original_filename }}"
+                      loading="lazy">
+                  </a>
+                </figure>
+                {% endfor %}
+              </div>
+              {% endif %}
 
             </div>
           </div>

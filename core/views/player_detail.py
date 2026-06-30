@@ -10,19 +10,16 @@ def player_detail_view(request, id):
 
     try:
         player = Player.objects.get(id=id)
-        comments = player.comments.filter(deleted_at__isnull=True)
+        comments = player.comments.filter(
+            deleted_at__isnull=True,
+        ).prefetch_related("image_attachments__image")
     except Player.DoesNotExist:
         error_message = f"Player with ID {id} not found."
         player = None
         comments = None
 
-
     return render(
         request,
         "player_detail.html",
-        {
-            "player": player,
-            "comments": comments,
-            "error_message": error_message
-        },
+        {"player": player, "comments": comments, "error_message": error_message},
     )
