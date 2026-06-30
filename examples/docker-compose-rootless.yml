@@ -46,7 +46,7 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    command: ["sh", "/app/scripts/player_sync.sh"]
+    command: ["sh", "/app/docker/player_sync.sh"]
     <<: *container-hardening
     volumes:
       - ./data:/app/data:rw
