@@ -298,3 +298,35 @@ body {
 .comment-image-preview-item .button {
   margin-bottom: 0.25rem;
 }
+
+
+.comment-image-lightbox-trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.comment-image-lightbox-trigger:focus-visible {
+  outline: 3px solid #70d6ff;
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
+.comment-image-lightbox-content {
+  width: min(96vw, 1200px);
+  max-height: 90vh;
+}
+
+.comment-image-lightbox-content img {
+  display: block;
+  max-width: 100%;
+  max-height: 82vh;
+  width: auto;
+  height: auto;
+  margin: 0 auto;
+  object-fit: contain;
+  border-radius: 0.5rem;
+}

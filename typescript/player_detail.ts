@@ -228,17 +228,22 @@ function renderSelectedImagePreview() {
     image.src = objectUrl;
     image.alt = file.name;
 
+    const faIcon = document.createElement("i");
+    faIcon.classList.add(
+      "fa-regular",
+      "fa-trash-can"
+    )
+
     const removeButton = document.createElement("button");
     removeButton.type = "button";
     removeButton.classList.add(
       "button",
       "is-small",
       "is-danger",
-      "is-light",
       "mt-2",
       "is-fullwidth",
     );
-    removeButton.innerText = "Remove";
+    removeButton.appendChild(faIcon);
     removeButton.addEventListener("click", () => removeImageFromPreview(index));
 
     const caption = document.createElement("p");
@@ -309,6 +314,89 @@ async function renderImagePreview() {
   renderSelectedImagePreview();
 }
 
+function openCommentImageLightbox(src: string, alt: string) {
+  const lightbox = document.getElementById(
+    "comment-image-lightbox",
+  ) as HTMLElement | null;
+  const lightboxImage = document.getElementById(
+    "comment-image-lightbox-image",
+  ) as HTMLImageElement | null;
+  const lightboxCaption = document.getElementById(
+    "comment-image-lightbox-caption",
+  ) as HTMLParagraphElement | null;
+
+  if (!lightbox || !lightboxImage || !lightboxCaption) {
+    return;
+  }
+
+  lightboxImage.src = src;
+  lightboxImage.alt = alt;
+  lightboxCaption.innerText = alt;
+
+  lightbox.classList.add("is-active");
+  lightbox.setAttribute("aria-hidden", "false");
+
+  document.documentElement.classList.add("is-clipped");
+}
+
+function closeCommentImageLightbox() {
+  const lightbox = document.getElementById(
+    "comment-image-lightbox",
+  ) as HTMLElement | null;
+  const lightboxImage = document.getElementById(
+    "comment-image-lightbox-image",
+  ) as HTMLImageElement | null;
+  const lightboxCaption = document.getElementById(
+    "comment-image-lightbox-caption",
+  ) as HTMLParagraphElement | null;
+
+  if (!lightbox || !lightboxImage || !lightboxCaption) {
+    return;
+  }
+
+  lightbox.classList.remove("is-active");
+  lightbox.setAttribute("aria-hidden", "true");
+
+  lightboxImage.removeAttribute("src");
+  lightboxImage.alt = "";
+  lightboxCaption.innerText = "";
+
+  document.documentElement.classList.remove("is-clipped");
+}
+
+function setupCommentImageLightbox() {
+  const triggers = document.querySelectorAll<HTMLButtonElement>(
+    ".comment-image-lightbox-trigger",
+  );
+
+  triggers.forEach((trigger) => {
+    trigger.addEventListener("click", () => {
+      const src = trigger.dataset.lightboxSrc;
+      const alt = trigger.dataset.lightboxAlt ?? "Comment image";
+
+      if (!src) {
+        return;
+      }
+
+      openCommentImageLightbox(src, alt);
+    });
+  });
+
+  const closeElements = document.querySelectorAll<HTMLElement>(
+    "[data-lightbox-close]",
+  );
+
+  closeElements.forEach((element) => {
+    element.addEventListener("click", closeCommentImageLightbox);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeCommentImageLightbox();
+    }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const addButton = document.getElementById(
     "button-submit",
@@ -323,4 +411,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (addButton) addButton.addEventListener("click", sendCommentPost);
   if (messageInput) messageInput.addEventListener("input", validateInputs);
   if (imageInput) imageInput.addEventListener("change", renderImagePreview);
+
+  setupCommentImageLightbox();
 });

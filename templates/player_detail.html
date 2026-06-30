@@ -202,10 +202,12 @@
               <div class="comment-images mt-3">
                 {% for attachment in comment.image_attachments.all %}
                 <figure class="image comment-image">
-                  <a href="{% url 'image_file' attachment.image.id %}" target="_blank" rel="noopener noreferrer">
+                  <button type="button" class="comment-image-lightbox-trigger"
+                    data-lightbox-src="{% url 'image_file' attachment.image.id %}"
+                    data-lightbox-alt="{{ attachment.image.original_filename }}">
                     <img src="{% url 'image_file' attachment.image.id %}" alt="{{ attachment.image.original_filename }}"
                       loading="lazy">
-                  </a>
+                  </button>
                 </figure>
                 {% endfor %}
               </div>
@@ -271,6 +273,20 @@
     </div>
   </div>
 
+</div>
+
+<div id="comment-image-lightbox" class="modal" aria-hidden="true">
+  <div class="modal-background" data-lightbox-close></div>
+
+  <div class="modal-content comment-image-lightbox-content">
+    <figure class="image">
+      <img id="comment-image-lightbox-image" src="" alt="">
+    </figure>
+
+    <p id="comment-image-lightbox-caption" class="has-text-centered has-text-grey-lighter mt-3"></p>
+  </div>
+
+  <button type="button" class="modal-close is-large" aria-label="close" data-lightbox-close></button>
 </div>
 
 <script type="module" src="{% static 'core/js/misc.js' %}"></script>
