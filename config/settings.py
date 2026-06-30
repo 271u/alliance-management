@@ -19,21 +19,29 @@ logging_time_format = "" if env_bool("RUNNING_IN_CONTAINER", False) else "%(asct
 if DEBUG:
     logging.basicConfig(
         level=logging.DEBUG,
-        format=logging_time_format + "[%(levelname)s] (%(filename)s:%(lineno)d in %(funcName)s) - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
+        format=logging_time_format
+        + "[%(levelname)s] (%(filename)s:%(lineno)d in %(funcName)s) - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
 else:
     logging.basicConfig(
-    level=logging.INFO,
-    format=logging_time_format + "[%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
+        level=logging.INFO,
+        format=logging_time_format + "[%(levelname)s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 SENTRY_LOGGING = env_bool("SENTRY_LOGGING", False)
-ALLOWED_HOSTS = env_list(
+
+# required for compose health check
+DEFAULT_ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+]
+
+ALLOWED_HOSTS = DEFAULT_ALLOWED_HOSTS + env_list(
     "DJANGO_ALLOWED_HOSTS",
-    "127.0.0.1,localhost",
+    "",
 )
 
 CSRF_TRUSTED_ORIGINS = env_list(
@@ -47,16 +55,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # Optional but useful for admin/site-aware setups
     "django.contrib.sites",
     "storages",
-
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.openid_connect",
-
     "core.apps.CoreConfig",
 ]
 
@@ -64,10 +69,8 @@ SITE_ID = 1
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    
     # Serve collected static files in production
     "whitenoise.middleware.WhiteNoiseMiddleware",
-
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -160,7 +163,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",  # required by allauth
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "core.context_processors.player_sync_status", # Player Sync Status
+                "core.context_processors.player_sync_status",  # Player Sync Status
                 "core.context_processors.app_branding",
             ],
         },
@@ -244,11 +247,10 @@ ACCOUNT_SIGNUP_FIELDS = ["email*"]
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
+
 def env_set(name: str, default: str = "") -> set[str]:
     return {
-        item.strip()
-        for item in os.getenv(name, default).split(",")
-        if item.strip()
+        item.strip() for item in os.getenv(name, default).split(",") if item.strip()
     }
 
 
