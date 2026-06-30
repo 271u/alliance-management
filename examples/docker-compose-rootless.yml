@@ -17,6 +17,7 @@ services:
       - .env
     <<: *container-hardening
     volumes:
+      # needs chmod 10001:10001 data/
       - ./data:/app/data:rw
     networks:
       - internal
