@@ -1,4 +1,4 @@
-from core.audit import create_audit_log
+from .helpers import create_audit_log
 from core.models.db.auditlog import AuditLog
 from core.models.db.rotation import TrainRotationEntry
 

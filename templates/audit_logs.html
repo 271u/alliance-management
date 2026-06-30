@@ -5,87 +5,187 @@
 
 {% block content %}
 <section class="section p-0">
-  <div class="box">
-    <div class="level mb-4">
-      <div class="level-left">
-        <div>
-          <h1 class="title is-4 mb-1">Audit Logs</h1>
-          <p class="subtitle is-6 has-text-grey">Chronological overview of relevant changes in {{ app_name }}.</p>
-        </div>
-      </div>
+  <div class="audit-page">
+    <div class="box audit-header">
+      <h1 class="title is-4 mb-1">Audit Logs</h1>
+      <p class="subtitle is-6 has-text-grey">
+        Relevant changes in {{ app_name }}, newest first.
+      </p>
     </div>
 
-    <form method="get" class="field is-grouped is-grouped-multiline mb-5">
-      <div class="control is-expanded">
-        <input
-          class="input"
-          type="search"
-          name="q"
-          value="{{ selected_query }}"
-          placeholder="Search message or object"
-        >
-      </div>
-
-      <div class="control">
-        <div class="select">
-          <select name="action">
-            <option value="">All actions</option>
-            {% for value, label in actions %}
-              <option value="{{ value }}" {% if selected_action == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
+    <form method="get" class="box audit-filter mb-0 px-0">
+      <div class="field is-grouped is-grouped-multiline">
+        <div class="control is-expanded">
+          <input
+            class="input"
+            type="search"
+            name="q"
+            value="{{ selected_query }}"
+            placeholder="Search message or object"
+          >
         </div>
-      </div>
 
-      <div class="control">
-        <button class="button is-link" type="submit">Filter</button>
+        <div class="control">
+          <div class="select">
+            <select name="action">
+              <option value="">All actions</option>
+              {% for value, label in actions %}
+                <option value="{{ value }}" {% if selected_action == value %}selected{% endif %}>
+                  {{ label }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="control">
+          <button class="button is-link" type="submit">Filter</button>
+        </div>
       </div>
     </form>
 
     {% if page.object_list %}
-      <div class="table-container">
-        <table class="table is-fullwidth is-hoverable is-striped">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Action</th>
-              <th>Actor</th>
-              <th>Object</th>
-              <th>Summary</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for log in page.object_list %}
-              <tr>
-                <td class="is-nowrap">{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
-                <td>
-                  <span class="tag {% if log.action == 'created' %}is-success{% elif log.action == 'updated' %}is-info{% elif log.action == 'deleted' %}is-danger{% endif %}">
-                    {{ log.get_action_display }}
+      <div class="audit-list">
+        {% for log in page.object_list %}
+          <article class="audit-card audit-card-{{ log.action }}">
+            <div class="audit-card-main">
+              <div class="audit-card-topline">
+                <span class="tag {{ log.action|audit_action_class }}">
+                  <span class="icon is-small">
+                    <i class="fa-solid {{ log.action|audit_action_icon }}"></i>
                   </span>
-                </td>
-                <td>{{ log.actor|default:"System" }}</td>
-                <td>{{ log.object_repr }}</td>
-                <td>{{ log.summary }}</td>
-                <td>
-                  <details>
-                    <summary>Show</summary>
-                    <pre class="mt-2 p-3 has-background-light is-size-7">{{ log.changes|audit_json }}</pre>
-                    {% if log.path %}
-                      <p class="is-size-7 has-text-grey">Path: {{ log.path }}</p>
-                    {% endif %}
-                    {% if log.ip_address %}
-                      <p class="is-size-7 has-text-grey">IP: {{ log.ip_address }}</p>
-                    {% endif %}
-                  </details>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+                  <span>{{ log.get_action_display }}</span>
+                </span>
+
+                <span class="audit-card-time">
+                  {{ log.created_at|date:"Y-m-d H:i:s" }}
+                </span>
+
+                <span class="audit-card-actor">
+                  {% if log.actor %}
+                    <span class="tag is-info">{{ log.actor }}</span>
+                  {% else %}
+                    <span class="tag is-white">System</span>
+                    
+                  {% endif %}
+                </span>
+              </div>
+
+              <div class="audit-card-content">
+                <strong class="audit-card-object">{{ log.object_repr }}</strong>
+                <span class="audit-card-summary">{{ log.summary }}</span>
+              </div>
+            </div>
+
+            <div class="audit-card-actions">
+              <button
+                type="button"
+                class="button is-small is-light audit-details-open"
+                data-audit-modal-id="audit-modal-{{ log.id }}"
+              >
+                Details
+              </button>
+            </div>
+          </article>
+        {% endfor %}
       </div>
 
-      <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+      {% for log in page.object_list %}
+        {% with changed_items=log.changes|audit_changed_items %}
+          <div id="audit-modal-{{ log.id }}" class="modal audit-modal" aria-hidden="true">
+            <div class="modal-background audit-details-close"></div>
+
+            <div class="modal-card audit-modal-card">
+              <header class="modal-card-head audit-modal-head">
+                <div>
+                  <p class="modal-card-title audit-modal-title">
+                    {{ log.get_action_display }}: {{ log.object_repr }}
+                  </p>
+
+                  <p class="audit-modal-subtitle">
+                    {{ log.created_at|date:"Y-m-d H:i:s" }}
+                    ·
+                    {% if log.actor %}
+                      {{ log.actor }}
+                    {% else %}
+                      System
+                    {% endif %}
+                    {% if log.ip_address %}
+                      · {{ log.ip_address }}
+                    {% endif %}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  class="delete audit-details-close"
+                  aria-label="close"
+                ></button>
+              </header>
+
+              <section class="modal-card-body audit-modal-body">
+                <div class="notification is-info is-light audit-message">
+                  {{ log.summary }}
+                </div>
+
+                <h3 class="title is-6 mb-3">Changed fields</h3>
+
+                {% if changed_items %}
+                  <div class="audit-change-list">
+                    {% for item in changed_items %}
+                      <section class="audit-change-card">
+                        <div class="audit-change-field">
+                          {{ item.field|audit_field_label }}
+                        </div>
+
+                        <div class="audit-change-values">
+                          <div class="audit-change-value audit-change-old">
+                            <span class="audit-change-label">Before</span>
+
+                            {% if item.old|audit_is_structured %}
+                              <pre>{{ item.old|audit_display_value }}</pre>
+                            {% else %}
+                              <span>{{ item.old|audit_display_value }}</span>
+                            {% endif %}
+                          </div>
+
+                          <div class="audit-change-arrow">
+                            <span class="icon">
+                              <i class="fa-solid fa-arrow-right"></i>
+                            </span>
+                          </div>
+
+                          <div class="audit-change-value audit-change-new">
+                            <span class="audit-change-label">After</span>
+
+                            {% if item.new|audit_is_structured %}
+                              <pre>{{ item.new|audit_display_value }}</pre>
+                            {% else %}
+                              <span>{{ item.new|audit_display_value }}</span>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </section>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <p class="has-text-grey">
+                    No changed fields were recorded for this entry.
+                  </p>
+                {% endif %}
+              </section>
+
+              <footer class="modal-card-foot audit-modal-foot">
+                <button type="button" class="button audit-details-close">
+                  Close
+                </button>
+              </footer>
+            </div>
+          </div>
+        {% endwith %}
+      {% endfor %}
+
+      <nav class="pagination is-centered mt-5" role="navigation" aria-label="pagination">
         {% if page.has_previous %}
           <a class="pagination-previous" href="?page={{ page.previous_page_number }}{% if selected_action %}&action={{ selected_action }}{% endif %}{% if selected_query %}&q={{ selected_query|urlencode }}{% endif %}">Previous</a>
         {% else %}
@@ -99,12 +199,66 @@
         {% endif %}
 
         <ul class="pagination-list">
-          <li><span class="pagination-link is-current">{{ page.number }} / {{ page.paginator.num_pages }}</span></li>
+          <li>
+            <span class="pagination-link is-current">
+              {{ page.number }} / {{ page.paginator.num_pages }}
+            </span>
+          </li>
         </ul>
       </nav>
     {% else %}
-      <div class="notification is-light">No audit logs found.</div>
+      <div class="notification is-light">
+        No audit logs found.
+      </div>
     {% endif %}
   </div>
 </section>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const openButtons = document.querySelectorAll(".audit-details-open");
+    const closeButtons = document.querySelectorAll(".audit-details-close");
+
+    function closeAllAuditModals() {
+      document.querySelectorAll(".audit-modal").forEach((modal) => {
+        modal.classList.remove("is-active");
+        modal.setAttribute("aria-hidden", "true");
+      });
+
+      document.documentElement.classList.remove("is-clipped");
+    }
+
+    openButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const modalId = button.getAttribute("data-audit-modal-id");
+
+        if (!modalId) {
+          return;
+        }
+
+        const modal = document.getElementById(modalId);
+
+        if (!modal) {
+          return;
+        }
+
+        closeAllAuditModals();
+
+        modal.classList.add("is-active");
+        modal.setAttribute("aria-hidden", "false");
+        document.documentElement.classList.add("is-clipped");
+      });
+    });
+
+    closeButtons.forEach((button) => {
+      button.addEventListener("click", closeAllAuditModals);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeAllAuditModals();
+      }
+    });
+  });
+</script>
 {% endblock %}

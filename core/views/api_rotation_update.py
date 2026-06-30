@@ -7,7 +7,7 @@ from django.views.decorators.http import require_http_methods
 
 from core.models import TrainRotationEntry
 from core.models.db.auditlog import AuditLog
-from core.rotation_audit import create_rotation_audit_log, rotation_order_snapshot
+from core.audit.rotation import create_rotation_audit_log, rotation_order_snapshot
 
 
 @require_http_methods(["POST"])

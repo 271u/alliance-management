@@ -14,7 +14,7 @@ COPY typescript ./typescript
 RUN pnpm run build:ts
 
 
-FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim AS builder
+FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim AS builder
 
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
@@ -33,7 +33,7 @@ RUN uv sync --locked --no-dev
 RUN DJANGO_DEBUG=0 DJANGO_SECRET_KEY=build-time-secret uv run python manage.py collectstatic --noinput
 
 
-FROM python:3.13-slim-trixie AS runtime
+FROM python:3.14-slim-trixie AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
