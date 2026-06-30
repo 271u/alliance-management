@@ -10,6 +10,7 @@ from core.helpers import JsonErrorMessage
 from core.models.db.image_attachment import ImageAttachment
 from core.models.db.player import Player
 from core.models.db.stored_image import StoredImage
+from core.audit.comment import create_comment_created_audit_log
 
 
 ALLOWED_IMAGE_MIME_TYPES = {
@@ -114,6 +115,8 @@ def add_player_comment(request) -> HttpResponse:
                     content_object=comment,
                     attached_by=request.user,
                 )
+
+            create_comment_created_audit_log(comment)
 
     except Exception as error:
         logging.error(

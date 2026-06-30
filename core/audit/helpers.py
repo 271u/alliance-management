@@ -3,7 +3,7 @@ from typing import Any
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from core.audit_context import (
+from .context import (
     get_current_ip_address,
     get_current_path,
     get_current_user,

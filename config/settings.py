@@ -72,7 +72,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "core.audit_context.AuditContextMiddleware",
+    "core.audit.context.AuditContextMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     # Require login by default
     "django.contrib.auth.middleware.LoginRequiredMiddleware",

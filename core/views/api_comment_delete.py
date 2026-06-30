@@ -5,6 +5,7 @@ from django.views.decorators.http import require_http_methods
 
 from core.helpers import JsonErrorMessage
 from core.models.db.comment import Comment
+from core.audit.comment import create_comment_deleted_audit_log
 
 
 @require_http_methods(["DELETE"])
@@ -31,6 +32,7 @@ def api_comment_delete(request, id):
         return JsonErrorMessage(f"Comment with ID {id} not found!", 404)
 
     comment.soft_delete(request.user)
+    create_comment_deleted_audit_log(comment)
 
     logging.debug("Successfully soft deleted comment with id=%s", id)
 
