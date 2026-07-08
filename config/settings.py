@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 
 import sentry_sdk
 import logging
@@ -9,7 +10,25 @@ import os
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+def get_git_version() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "describe", "--tags", "--always", "--dirty"],
+            cwd=BASE_DIR,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "dev"
+
+
 APP_NAME = env_str("APP_NAME", "Alliance Management")
+APP_VERSION = env_str("APP_VERSION", get_git_version())
+APP_SOURCE_URL = env_str(
+    "APP_SOURCE_URL",
+    "https://github.com/271u/alliance-management",
+)
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-secret-key")
 DEBUG = env_bool("DJANGO_DEBUG", False)
@@ -165,6 +184,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "core.context_processors.player_sync_status",  # Player Sync Status
                 "core.context_processors.app_branding",
+                "core.context_processors.app_metadata",
             ],
         },
     },

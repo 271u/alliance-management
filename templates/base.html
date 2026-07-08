@@ -129,6 +129,20 @@
         </div>
     </main>
 
+    {% if user.is_authenticated %}
+    <footer class="footer py-4">
+        <div class="content has-text-centered">
+            <p>
+                <strong>{{ APP_NAME }} {{ APP_VERSION }}</strong> by cosmadora.
+                The source code is licensed
+                <a href="https://opensource.org/license/mit">MIT</a>. The
+                source code can be found 
+                <a href="{{ APP_SOURCE_URL }}">on GitHub</a>.
+            </p>
+        </div>
+    </footer>
+    {% endif %}
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const burgers = Array.from(document.querySelectorAll(".navbar-burger"));

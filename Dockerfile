@@ -35,9 +35,16 @@ RUN DJANGO_DEBUG=0 DJANGO_SECRET_KEY=build-time-secret uv run python manage.py c
 
 FROM python:3.14-slim-trixie AS runtime
 
+ARG APP_VERSION=dev
+ARG APP_SOURCE_URL=https://github.com/271u/alliance-management
+ARG VCS_REF=unknown
+
+
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/.venv/bin:$PATH"
+ENV APP_VERSION=${APP_VERSION}
+ENV APP_SOURCE_URL=${APP_SOURCE_URL}
 
 WORKDIR /app
 
