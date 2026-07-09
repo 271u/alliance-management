@@ -76,6 +76,7 @@ jobs:
             ### OCI Image created!
             
             The following details for the image are available:
+            * **Tags:** `${{ steps.app-version.outputs.version }}` `pr-${{ github.event.pull_request.number }}`
             * **Image:** `ghcr.io/${{ github.repository }}:${{ steps.app-version.outputs.version }}`
             * **Digest:** `${{ steps.docker_build.outputs.digest }}`
             <details>
