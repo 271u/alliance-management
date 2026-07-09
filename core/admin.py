@@ -125,7 +125,12 @@ class PlayerAdmin(admin.ModelAdmin):
         "reliability_score",
     )
 
-    search_fields = ("ingame_name", "notes")
+    search_fields = (
+        "ingame_name",
+        "last_war_id",
+        "comments__text",
+        "past_usernames__ingame_name",
+    )
 
     ordering = ("ingame_name",)
 
@@ -165,7 +170,9 @@ class TrainRotationEntryAdmin(admin.ModelAdmin):
 
     search_fields = (
         "player__ingame_name",
-        "player__notes",
+        "player__last_war_id",
+        "player__comments__text",
+        "player__past_usernames__ingame_name",
     )
 
     ordering = ("position", "player__ingame_name")
