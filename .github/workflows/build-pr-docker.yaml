@@ -22,6 +22,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      pull-requests: write
 
     concurrency:
       group: docker-pr-${{ github.event.pull_request.number }}
@@ -55,6 +56,7 @@ jobs:
           echo "version=pr-${{ github.event.pull_request.number }}-${short_sha}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push Docker image
+        id: docker_build
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: .
@@ -65,3 +67,19 @@ jobs:
             APP_VERSION=${{ steps.app-version.outputs.version }}
             APP_SOURCE_URL=${{ github.server_url }}/${{ github.repository }}
             VCS_REF=${{ github.sha }}
+
+      - name: Post OCI image details
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5 
+        with:
+          header: docker-info
+          message: |
+            ### OCI Image created!
+            
+            The following details for the image are available:
+            * **Image:** `ghcr.io/${{ github.repository }}:${{ steps.app-version.outputs.version }}`
+            * **Digest:** `${{ steps.docker_build.outputs.digest }}`
+            * **Metadata:** ```json
+            ${{ steps.docker_build.outputs.metadata }}
+            ```
+
+            
