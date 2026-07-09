@@ -15,42 +15,54 @@
   </ul>
 </div>
 
-<table class="table is-striped is-hoverable">
+<table class="table is-striped is-hoverable is-fullwidth player-overview-table">
   <thead>
     <tr>
       <th>Ingame Name</th>
       <th>Strength</th>
-      <th>🚄 Last Train Conductor</th>
-      <th>📅 Membership Duration</th>
-      <th></th>
+      <th>Last Train Conductor</th>
+      <th>Membership Duration</th>
+      <th class="has-text-right">Actions</th>
     </tr>
   </thead>
+
   <tbody>
     {% for player in players %}
     <tr>
-      <td>
-        <div class="is-flex">
+      <td data-label="Player" class="player-overview-name-cell">
+        <div class="player-overview-player">
           {% if player.is_member %}
-          <span class="mr-2">
+          <span class="player-overview-rank">
             {% alliance_status_tag player.alliance_status %}
           </span>
           {% endif %}
 
-          <span>
+          <span class="player-overview-name">
             {{ player.ingame_name }}
           </span>
         </div>
       </td>
-      <td>{{ player.strength_string }}</td>
-      <td>{{ player.last_conductor_string }}</td>
-      <td><abbr title="Joined {{ player.joined_at_string }}">{{ player.joined_at_since_string }}</abbr></td>
 
-      <td class="has-text-right">
+      <td data-label="Strength">
+        {{ player.strength_string }}
+      </td>
+
+      <td data-label="Last Train">
+        {{ player.last_conductor_string }}
+      </td>
+
+      <td data-label="Membership">
+        <abbr title="Joined {{ player.joined_at_string }}">
+          {{ player.joined_at_since_string }}
+        </abbr>
+      </td>
+
+      <td data-label="Actions" class="has-text-right player-overview-actions">
         {% if player.active_comment_count %}
-        <a href="{% url 'player_detail' player.id %}#comments">
+        <a href="{% url 'player_detail' player.id %}#comments" class="player-overview-action">
           <span class="tag is-dark is-medium">
-            <span style="color:yellow" class="icon-text">
-              <span class="icon">
+            <span class="icon-text">
+              <span class="icon has-text-warning">
                 <i class="fa-regular fa-comments"></i>
               </span>
               <span>{{ player.active_comment_count }}</span>
@@ -58,7 +70,8 @@
           </span>
         </a>
         {% endif %}
-        <a href="{% url 'player_detail' player.id %}">
+
+        <a href="{% url 'player_detail' player.id %}" class="player-overview-action">
           <span class="tag is-dark is-medium">
             <span class="icon-text">
               <span class="icon">
@@ -72,12 +85,7 @@
     </tr>
     {% empty %}
     <tr>
-      <td>Nobody found :(</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td colspan="5">Nobody found :(</td>
     </tr>
     {% endfor %}
   </tbody>

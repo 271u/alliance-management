@@ -14,36 +14,48 @@
   </ul>
 </div>
 
-<table class="table is-striped is-hoverable">
+<table class="table is-striped is-hoverable is-fullwidth player-overview-table">
   <thead>
     <tr>
       <th>Last observed Name</th>
       <th>Last Rank</th>
       <th>Last Train Conductor</th>
-      <th>observed Leave Date</th>
-      <th></th>
+      <th>Observed Leave Date</th>
+      <th class="has-text-right">Actions</th>
     </tr>
   </thead>
+
   <tbody>
     {% for player in players %}
     <tr>
-      <td>
-        <div class="is-flex">
-          <span>
+      <td data-label="Player" class="player-overview-name-cell">
+        <div class="player-overview-player">
+          <span class="tag is-not-member-tag">Left</span>
+
+          <span class="player-overview-name">
             {{ player.ingame_name }}
           </span>
         </div>
       </td>
-      <td>{{ player.alliance_rank }}</td>
-      <td>{{ player.last_conductor_string }}</td>
-      <td>{{ player.left_at|date:"Y-m-d H:i"|default:"-" }}</td>
 
-      <td class="has-text-right">
+      <td data-label="Last Rank">
+        R{{ player.alliance_rank }}
+      </td>
+
+      <td data-label="Last Train">
+        {{ player.last_conductor_string }}
+      </td>
+
+      <td data-label="Left At">
+        {{ player.left_at|date:"Y-m-d H:i"|default:"-" }}
+      </td>
+
+      <td data-label="Actions" class="has-text-right player-overview-actions">
         {% if player.active_comment_count %}
-        <a href="{% url 'player_detail' player.id %}#comments">
+        <a href="{% url 'player_detail' player.id %}#comments" class="player-overview-action">
           <span class="tag is-dark is-medium">
-            <span style="color:yellow" class="icon-text">
-              <span class="icon">
+            <span class="icon-text">
+              <span class="icon has-text-warning">
                 <i class="fa-regular fa-comments"></i>
               </span>
               <span>{{ player.active_comment_count }}</span>
@@ -51,7 +63,8 @@
           </span>
         </a>
         {% endif %}
-        <a href="{% url 'player_detail' player.id %}">
+
+        <a href="{% url 'player_detail' player.id %}" class="player-overview-action">
           <span class="tag is-dark is-medium">
             <span class="icon-text">
               <span class="icon">
@@ -65,12 +78,7 @@
     </tr>
     {% empty %}
     <tr>
-      <td>Nobody found :(</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td colspan="5">Nobody found :(</td>
     </tr>
     {% endfor %}
   </tbody>
