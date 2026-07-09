@@ -24,3 +24,14 @@ def env_str(name: str, default: str = "") -> str:
         return default
 
     return value.strip() or default
+
+def env_int(name: str, default: int = 0) -> int:
+    value = os.getenv(name)
+
+    if value is None:
+        return default
+
+    try:
+        return int(value.strip())
+    except ValueError:
+        return default

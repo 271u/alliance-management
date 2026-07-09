@@ -6,6 +6,7 @@ from core.views.health import healthz
 from core.views.home import home
 from core.views.login import login_start
 from core.views.comment_delete import comment_delete_view
+from core.views.image_file import image_file
 from core.views.rotation import rotation_view
 from core.views.player_overview import player_overview_view
 from core.views.player_search import player_search_view
@@ -43,6 +44,7 @@ urlpatterns = [
     path("players/search/", player_search_view, name="player_search"),
     path('players/<int:id>', player_detail_view, name='player_detail'),
     path("audit-logs/", audit_log_list, name="audit_logs"),
+    path("images/<uuid:image_id>/", image_file, name="image_file"),
 
     # API
     path("api/comment/add", api_comment_add, name="api_comment_add"),

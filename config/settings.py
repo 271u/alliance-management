@@ -1,15 +1,34 @@
 from pathlib import Path
+import subprocess
 
 import sentry_sdk
 import logging
-from helpers.env import env_bool, env_str, env_list    
+from helpers.env import env_bool, env_str, env_list, env_int
 
 from config.database import build_database_config
 import os
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+def get_git_version() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "describe", "--tags", "--always", "--dirty"],
+            cwd=BASE_DIR,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "dev"
+
+
 APP_NAME = env_str("APP_NAME", "Alliance Management")
+APP_VERSION = env_str("APP_VERSION", get_git_version())
+APP_SOURCE_URL = env_str(
+    "APP_SOURCE_URL",
+    "https://github.com/271u/alliance-management",
+)
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-secret-key")
 DEBUG = env_bool("DJANGO_DEBUG", False)
@@ -19,21 +38,29 @@ logging_time_format = "" if env_bool("RUNNING_IN_CONTAINER", False) else "%(asct
 if DEBUG:
     logging.basicConfig(
         level=logging.DEBUG,
-        format=logging_time_format + "[%(levelname)s] (%(filename)s:%(lineno)d in %(funcName)s) - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
+        format=logging_time_format
+        + "[%(levelname)s] (%(filename)s:%(lineno)d in %(funcName)s) - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
 else:
     logging.basicConfig(
-    level=logging.INFO,
-    format=logging_time_format + "[%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
+        level=logging.INFO,
+        format=logging_time_format + "[%(levelname)s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 SENTRY_LOGGING = env_bool("SENTRY_LOGGING", False)
-ALLOWED_HOSTS = env_list(
+
+# required for compose health check
+DEFAULT_ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+]
+
+ALLOWED_HOSTS = DEFAULT_ALLOWED_HOSTS + env_list(
     "DJANGO_ALLOWED_HOSTS",
-    "127.0.0.1,localhost",
+    "",
 )
 
 CSRF_TRUSTED_ORIGINS = env_list(
@@ -47,15 +74,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # Optional but useful for admin/site-aware setups
     "django.contrib.sites",
-
+    "storages",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.openid_connect",
-
     "core.apps.CoreConfig",
 ]
 
@@ -63,15 +88,13 @@ SITE_ID = 1
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    
     # Serve collected static files in production
     "whitenoise.middleware.WhiteNoiseMiddleware",
-
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "core.audit_context.AuditContextMiddleware",
+    "core.audit.context.AuditContextMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     # Require login by default
     "django.contrib.auth.middleware.LoginRequiredMiddleware",
@@ -88,14 +111,60 @@ STATICFILES_STORAGE_BACKEND = (
     else "whitenoise.storage.CompressedManifestStaticFilesStorage"
 )
 
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+UPLOAD_STORAGE_BACKEND = env_str("UPLOAD_STORAGE_BACKEND", "filesystem")
+
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": MEDIA_ROOT,
+            "base_url": MEDIA_URL,
+        },
     },
     "staticfiles": {
         "BACKEND": STATICFILES_STORAGE_BACKEND,
     },
 }
+
+if UPLOAD_STORAGE_BACKEND == "s3":
+    s3_options = {
+        "bucket_name": env_str("AWS_STORAGE_BUCKET_NAME"),
+        "region_name": env_str("AWS_S3_REGION_NAME", "eu-central-1"),
+        "location": env_str("AWS_LOCATION", "media"),
+        "default_acl": None,
+        "querystring_auth": True,
+        "querystring_expire": env_int("AWS_QUERYSTRING_EXPIRE", 60),
+        "file_overwrite": False,
+    }
+
+    aws_access_key_id = env_str("AWS_ACCESS_KEY_ID")
+    aws_secret_access_key = env_str("AWS_SECRET_ACCESS_KEY")
+    aws_s3_endpoint_url = env_str("AWS_S3_ENDPOINT_URL")
+    aws_s3_addressing_style = env_str("AWS_S3_ADDRESSING_STYLE")
+
+    if aws_access_key_id:
+        s3_options["access_key"] = aws_access_key_id
+
+    if aws_secret_access_key:
+        s3_options["secret_key"] = aws_secret_access_key
+
+    if aws_s3_endpoint_url:
+        s3_options["endpoint_url"] = aws_s3_endpoint_url
+
+    if aws_s3_addressing_style:
+        s3_options["addressing_style"] = aws_s3_addressing_style
+
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": s3_options,
+    }
+
+COMMENT_IMAGE_MAX_FILES = env_int("COMMENT_IMAGE_MAX_FILES", 5)
+COMMENT_IMAGE_MAX_SIZE_MB = env_int("COMMENT_IMAGE_MAX_SIZE_MB", 5)
+COMMENT_IMAGE_MAX_PIXELS = env_int("COMMENT_IMAGE_MAX_PIXELS", 20_000_000)
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
@@ -113,8 +182,9 @@ TEMPLATES = [
                 "django.template.context_processors.request",  # required by allauth
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "core.context_processors.player_sync_status", # Player Sync Status
+                "core.context_processors.player_sync_status",  # Player Sync Status
                 "core.context_processors.app_branding",
+                "core.context_processors.app_metadata",
             ],
         },
     },
@@ -197,11 +267,10 @@ ACCOUNT_SIGNUP_FIELDS = ["email*"]
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
+
 def env_set(name: str, default: str = "") -> set[str]:
     return {
-        item.strip()
-        for item in os.getenv(name, default).split(",")
-        if item.strip()
+        item.strip() for item in os.getenv(name, default).split(",") if item.strip()
     }
 
 

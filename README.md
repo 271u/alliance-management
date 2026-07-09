@@ -12,6 +12,9 @@ The project is designed as a practical internal alliance operations tool, but th
 - Provides member and non-member overviews.
 - Provides case-insensitive player search and player detail pages.
 - Supports comments on players, including soft deletion by staff users.
+- Supports image attachments on player comments.
+- Stores uploaded images through Django's file storage system, using either local filesystem storage or an S3-compatible object storage backend.
+- Serves uploaded images through authenticated Django routes instead of exposing public bucket URLs.
 - Manages a train conductor rotation for eligible R4/R5 players.
 - Allows rotation entries to be added, reordered, and removed.
 - Writes audit logs for player changes and rotation changes.
@@ -21,6 +24,7 @@ The project is designed as a practical internal alliance operations tool, but th
 - Restricts access by OIDC group membership.
 - Maps configured OIDC admin groups to Django staff and superuser permissions.
 - Provides a health endpoint for container health checks.
+
 
 ## Tech stack
 
@@ -39,6 +43,9 @@ The project is designed as a practical internal alliance operations tool, but th
 - pnpm for JavaScript dependency management in the Taskfile
 - Task for repeatable development commands
 - Docker and Docker Compose for deployment
+- django-storages for S3-compatible media storage
+- Pillow for validating uploaded images
+- S3-compatible object storage for production media uploads
 
 ## Repository layout
 
@@ -47,7 +54,9 @@ The project is designed as a practical internal alliance operations tool, but th
 | `config/settings.py` | Main Django settings, authentication, static files, logging, Sentry, OIDC, and branding configuration. |
 | `config/database.py` | SQLite/PostgreSQL database configuration builder. |
 | `config/urls.py` | URL routes and Django admin branding. |
-| `core/models/` | Database models and Pydantic API models. |
+| `core/models/` | Database models and Pydantic API models, including players, comments, uploaded images, and generic image attachments. |
+| `core/views/image_file.py` | Authenticated image delivery endpoint for uploaded comment images. |
+| `media/` | Local uploaded media directory when `UPLOAD_STORAGE_BACKEND=filesystem`. Do not commit this directory. |
 | `core/services/game_client.py` | LastWar Tools API client. |
 | `core/services/player_sync.py` | Player sync logic that creates, updates, joins, leaves, and records sync runs. |
 | `core/management/commands/sync_players.py` | Django management command for manual or scheduled player syncs. |
@@ -188,6 +197,163 @@ Boolean values are parsed as true when set to `1`, `true`, `yes`, or `on`. Any o
 | `POSTGRES_HOST` | `db` | No, PostgreSQL only | PostgreSQL host. The example Compose file uses a service named `db`. |
 | `POSTGRES_PORT` | `5432` | No, PostgreSQL only | PostgreSQL port. |
 | `POSTGRES_CONN_MAX_AGE` | `60` | No, PostgreSQL only | Django persistent database connection lifetime in seconds. |
+
+### Uploaded media storage settings
+
+Uploaded files are stored through Django's default file storage backend. The database stores only the storage-relative file path, for example:
+
+```text
+images/2026/06/30/example.png
+```
+
+The active storage backend decides where that file physically lives.
+
+With local filesystem storage, the file is expected at:
+
+```text
+media/images/2026/06/30/example.png
+```
+
+With S3 storage and the default `AWS_LOCATION=media`, the file is expected at:
+
+```text
+s3://your-bucket/media/images/2026/06/30/example.png
+```
+
+| Variable | Default | Required | Description |
+| --- | ---: | ---: | --- |
+| `UPLOAD_STORAGE_BACKEND` | `filesystem` | No | Uploaded media backend. Supported values are `filesystem` and `s3`. |
+| `AWS_STORAGE_BUCKET_NAME` | empty | Yes, S3 only | S3 bucket name used for uploaded media. |
+| `AWS_S3_REGION_NAME` | `eu-central-1` | No, S3 only | S3 region name. For Scaleway, use the Scaleway region, for example `fr-par` or `nl-ams`. |
+| `AWS_ACCESS_KEY_ID` | empty | Usually yes, S3 only | Access key for the S3-compatible bucket. Can be omitted if credentials are provided through the runtime environment. |
+| `AWS_SECRET_ACCESS_KEY` | empty | Usually yes, S3 only | Secret key for the S3-compatible bucket. Can be omitted if credentials are provided through the runtime environment. |
+| `AWS_S3_ENDPOINT_URL` | empty | Provider-dependent | Custom S3 endpoint URL. Required for S3-compatible providers such as Scaleway. |
+| `AWS_S3_ADDRESSING_STYLE` | empty | Provider-dependent | Optional addressing style. Use `path` only if your S3-compatible provider requires path-style addressing. |
+| `AWS_LOCATION` | `media` | No, S3 only | Prefix inside the bucket where uploaded media is stored. |
+| `AWS_QUERYSTRING_EXPIRE` | `60` | No, S3 only | Expiry in seconds for generated signed storage URLs. The application normally serves images through its own authenticated image route. |
+| `COMMENT_IMAGE_MAX_FILES` | `5` | No | Maximum number of images allowed per comment. |
+| `COMMENT_IMAGE_MAX_SIZE_MB` | `5` | No | Maximum size per uploaded image in megabytes. |
+| `COMMENT_IMAGE_MAX_PIXELS` | `20000000` | No | Maximum width × height pixel count per uploaded image. |
+
+Uploaded comment images are intentionally served through:
+
+```text
+/images/{image_id}/
+```
+
+This route checks authentication and image visibility before returning the file. Do not configure a CDN or reverse proxy to publicly cache this route unless image authorization is handled before the cache.
+
+### Scaleway Object Storage example
+
+This project can use Scaleway Object Storage through the S3-compatible backend.
+
+The Scaleway bucket itself must already exist. Bucket creation, IAM/access key setup, lifecycle policies, and Scaleway-side permissions are outside the scope of this README.
+
+Example for a bucket in the Paris region:
+
+```env
+UPLOAD_STORAGE_BACKEND=s3
+
+AWS_STORAGE_BUCKET_NAME=your-scaleway-bucket-name
+AWS_S3_REGION_NAME=fr-par
+AWS_S3_ENDPOINT_URL=https://s3.fr-par.scw.cloud
+
+AWS_ACCESS_KEY_ID=your-scaleway-access-key
+AWS_SECRET_ACCESS_KEY=your-scaleway-secret-key
+
+AWS_LOCATION=media
+AWS_QUERYSTRING_EXPIRE=60
+
+COMMENT_IMAGE_MAX_FILES=5
+COMMENT_IMAGE_MAX_SIZE_MB=5
+COMMENT_IMAGE_MAX_PIXELS=20000000
+```
+
+For other Scaleway regions, change both `AWS_S3_REGION_NAME` and `AWS_S3_ENDPOINT_URL` together.
+
+Examples:
+
+| Region | Endpoint |
+| --- | --- |
+| `fr-par` | `https://s3.fr-par.scw.cloud` |
+| `nl-ams` | `https://s3.nl-ams.scw.cloud` |
+| `pl-waw` | `https://s3.pl-waw.scw.cloud` |
+| `it-mil` | `https://s3.it-mil.scw.cloud` |
+
+Keep the bucket private. The application serves uploaded images through authenticated Django routes, so the bucket does not need to be public.
+
+## Migrating uploaded media between local storage and S3
+
+The database stores image file paths relative to the configured storage backend. That means the database usually does not need to be changed when moving uploaded media between local filesystem storage and S3, as long as the same relative paths are preserved.
+
+Example database value:
+
+```text
+images/2026/06/30/example.png
+```
+
+With local storage, this maps to:
+
+```text
+./media/images/2026/06/30/example.png
+```
+
+With S3 and `AWS_LOCATION=media`, this maps to:
+
+```text
+s3://your-bucket/media/images/2026/06/30/example.png
+```
+
+### Local filesystem to S3
+
+Recommended process:
+
+1. Stop the app or temporarily block image uploads.
+2. Sync the local media directory to the S3 bucket while preserving paths.
+3. Switch `UPLOAD_STORAGE_BACKEND` from `filesystem` to `s3`.
+4. Restart the app.
+5. Verify that old images still load.
+6. Upload a new test image.
+7. Keep the old local media directory as a backup until the migration is confirmed.
+
+Example sync command when using the default `AWS_LOCATION=media`:
+
+```bash
+aws s3 sync ./media s3://YOUR_BUCKET_NAME/media
+```
+
+Alternatively, if only uploaded images should be copied:
+
+```bash
+aws s3 sync ./media/images s3://YOUR_BUCKET_NAME/media/images
+```
+
+Do not sync `./media` directly to the bucket root when `AWS_LOCATION=media` is set. The application would look for files below `media/images/...` in the bucket.
+
+### S3 to local filesystem
+
+Recommended process:
+
+1. Stop the app or temporarily block image uploads.
+2. Sync the S3 media prefix back to the local media directory.
+3. Switch `UPLOAD_STORAGE_BACKEND` from `s3` to `filesystem`.
+4. Restart the app.
+5. Verify that old images still load.
+6. Upload a new test image.
+
+Example rollback sync command:
+
+```bash
+aws s3 sync s3://YOUR_BUCKET_NAME/media ./media
+```
+
+Then configure:
+
+```env
+UPLOAD_STORAGE_BACKEND=filesystem
+```
+
+The application currently uses one active media storage backend at a time. It does not automatically check both local filesystem storage and S3 for missing files. Copy first, then switch.
 
 ### OIDC authentication settings
 
@@ -347,6 +513,20 @@ LASTWAR_TOOLS_BASEURL=https://api.lastwar.tools
 LASTWAR_TOOLS_APIKEY=your-api-key
 LASTWAR_TOOLS_ALLIANCEID=your-alliance-id
 
+UPLOAD_STORAGE_BACKEND=s3
+
+AWS_STORAGE_BUCKET_NAME=your-scaleway-bucket-name
+AWS_S3_REGION_NAME=fr-par
+AWS_S3_ENDPOINT_URL=https://s3.fr-par.scw.cloud
+AWS_ACCESS_KEY_ID=your-scaleway-access-key
+AWS_SECRET_ACCESS_KEY=your-scaleway-secret-key
+AWS_LOCATION=media
+AWS_QUERYSTRING_EXPIRE=60
+
+COMMENT_IMAGE_MAX_FILES=5
+COMMENT_IMAGE_MAX_SIZE_MB=5
+COMMENT_IMAGE_MAX_PIXELS=20000000
+
 PLAYER_SYNC_INTERVAL_SECONDS=10800
 PLAYER_SYNC_INITIAL_DELAY_SECONDS=120
 ```
@@ -364,6 +544,7 @@ PLAYER_SYNC_INITIAL_DELAY_SECONDS=120
 | `/players/search/?q=name` | Player search. |
 | `/players/{id}` | Player detail page with comments. |
 | `/rotation/` | Train conductor rotation page. |
+| `/images/{image_id}/` | Authenticated image delivery endpoint for uploaded comment images. |
 | `/audit-logs/` | Staff-only audit log list. |
 | `/admin/` | Django admin. |
 
@@ -395,6 +576,11 @@ Before exposing the app outside a private network:
 - Rotate `OIDC_CLIENT_SECRET` and `LASTWAR_TOOLS_APIKEY` if they were ever exposed.
 - Decide how long audit logs and comments should be retained.
 - Add monitoring for `/healthz/` and failed `PlayerSyncRun` rows.
+- Keep uploaded media buckets private.
+- Do not expose raw S3 object URLs as public application URLs.
+- Do not configure a CDN to publicly cache `/images/*` unless authorization is handled before the cache.
+- Back up uploaded media together with the database.
+- Test media migration before switching `UPLOAD_STORAGE_BACKEND` in production.
 
 ## License
 

@@ -1,10 +1,11 @@
 # core/models/comment.py
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
+from .image_attachment import ImageAttachment
 
 
 
@@ -14,6 +15,11 @@ class Comment(models.Model):
     content_object = GenericForeignKey("content_type", "object_id")
 
     text = models.TextField()
+
+    image_attachments = GenericRelation(
+        ImageAttachment,
+        related_query_name="comment",
+    )
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

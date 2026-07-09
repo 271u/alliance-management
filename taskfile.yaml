@@ -3,6 +3,7 @@ version: "3"
 vars:
   GITUSER:
     sh: git config user.name || echo "Unknown User"
+  PACK_FILE: ../alliance-management.tar
 
 dotenv:
   - .env
@@ -89,24 +90,24 @@ tasks:
     deps:
       - clean
     cmds:
-      - rm -f ../project.tar
-      - tar -rf ../project.tar config/
-      - tar -rf ../project.tar core/
-      - tar -rf ../project.tar docker/
-      - tar -rf ../project.tar Dockerfile
-      - tar -rf ../project.tar .dockerignore
-      - tar -rf ../project.tar examples/
-      - tar -rf ../project.tar .github/
-      - tar -rf ../project.tar helpers/
-      - tar -rf ../project.tar manage.py
-      - tar -rf ../project.tar package.json
-      - tar -rf ../project.tar pnpm-lock.yaml
-      - tar -rf ../project.tar pyproject.toml
-      - tar -rf ../project.tar README.md
-      - tar -rf ../project.tar scripts/
-      - tar -rf ../project.tar staticfiles/
-      - tar -rf ../project.tar taskfile.yaml
-      - tar -rf ../project.tar templates/
-      - tar -rf ../project.tar tsconfig.json
-      - tar -rf ../project.tar typescript/
-      - tar -rf ../project.tar uv.lock
+      - rm -f {{.PACK_FILE}}
+      - tar -rf {{.PACK_FILE}} config/
+      - tar -rf {{.PACK_FILE}} core/
+      - tar -rf {{.PACK_FILE}} docker/
+      - tar -rf {{.PACK_FILE}} Dockerfile
+      - tar -rf {{.PACK_FILE}} .dockerignore
+      - tar -rf {{.PACK_FILE}} examples/
+      - tar -rf {{.PACK_FILE}} .github/
+      - tar -rf {{.PACK_FILE}} helpers/
+      - tar -rf {{.PACK_FILE}} manage.py
+      - tar -rf {{.PACK_FILE}} package.json
+      - tar -rf {{.PACK_FILE}} pnpm-lock.yaml
+      - tar -rf {{.PACK_FILE}} pyproject.toml
+      - tar -rf {{.PACK_FILE}} README.md
+      - tar -rf {{.PACK_FILE}} scripts/
+      - tar -rf {{.PACK_FILE}} taskfile.yaml
+      - tar -rf {{.PACK_FILE}} templates/
+      - tar -rf {{.PACK_FILE}} tsconfig.json
+      - tar -rf {{.PACK_FILE}} typescript/
+      - tar -rf {{.PACK_FILE}} uv.lock
+      - task: install
