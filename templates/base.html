@@ -38,13 +38,17 @@
                     <a class="navbar-item" href="{% url 'home' %}">
                         Home
                     </a>
+                    {% if perms.core.view_trainrotationentry %}
                     <a class="navbar-item" href="{% url 'rotation' %}">
                         R4/R5 Rotation
                     </a>
+                    {% endif %}
 
+                    {% if perms.core.view_player %}
                     <a class="navbar-item" href="{% url 'players' %}">
                         Players
                     </a>
+                    {% endif %}
 
                     {% if user.is_staff %}
                     <a class="navbar-item" href="{% url 'audit_logs' %}">
@@ -136,7 +140,7 @@
                 <strong>{{ APP_NAME }} {{ APP_VERSION }}</strong> by cosmadora.
                 The source code is licensed
                 <a href="https://opensource.org/license/mit">MIT</a>. The
-                source code can be found 
+                source code can be found
                 <a href="{{ APP_SOURCE_URL }}">on GitHub</a>.
             </p>
         </div>

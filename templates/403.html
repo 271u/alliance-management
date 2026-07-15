@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Permission denied · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="columns is-centered">
+        <div class="column is-7-tablet is-5-desktop">
+            <article class="message is-warning">
+                <div class="message-header">
+                    <p>
+                        <i class="fa-solid fa-lock mr-2"></i>
+                        Permission denied
+                    </p>
+                </div>
+
+                <div class="message-body">
+                    <p>
+                        Your account does not have permission to access
+                        this part of the application.
+                    </p>
+
+                    <div class="buttons mt-5">
+                        <a class="button is-primary" href="{% url 'home' %}">
+                            <span class="icon">
+                                <i class="fa-solid fa-house"></i>
+                            </span>
+                            <span>Back to dashboard</span>
+                        </a>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+{% endblock %}

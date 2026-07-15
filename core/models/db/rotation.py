@@ -24,6 +24,12 @@ class TrainRotationEntry(models.Model):
         ordering = ["position", "player__ingame_name"]
         verbose_name = "train rotation entry"
         verbose_name_plural = "train rotation entries"
+        permissions = [
+        (
+            "manage_train_rotation",
+            "Can add, remove, and reorder train rotation entries",
+        ),
+    ]
 
     def __str__(self):
         return f"{self.position}. {self.player.ingame_name}"

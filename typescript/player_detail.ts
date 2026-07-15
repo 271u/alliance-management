@@ -1,31 +1,11 @@
 import { getCsrfToken } from "./misc.js";
+import { setError } from "./errors.js";
 
 const MAX_IMAGE_PREVIEW_FILES = 5;
 const MAX_IMAGE_PREVIEW_SIZE_MB = 5;
 
 let previewObjectUrls: string[] = [];
 let selectedImageFiles: File[] = [];
-
-async function setError(message: string) {
-  const errorArticle = document.getElementById(
-    "error-message-article",
-  ) as HTMLElement | null;
-  const errorHeader = document.getElementById(
-    "error-message-header",
-  ) as HTMLParagraphElement | null;
-  const errorMessage = document.getElementById(
-    "error-message-body",
-  ) as HTMLDivElement | null;
-
-  if (errorArticle == null || errorHeader == null || errorMessage == null) {
-    return;
-  }
-
-  errorArticle.classList.remove("hidden");
-  errorMessage.innerHTML = message;
-  document.body.scrollTop = 0;
-  document.documentElement.scrollTop = 0;
-}
 
 function validateInputs() {
   const addButton = document.getElementById(

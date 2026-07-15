@@ -85,6 +85,10 @@ tasks:
     desc: Run python manage.py sync_players
     cmd: uv run python manage.py sync_players
   
+  manage:setup_rbac:
+    desc: Run python manage.py setup_rbac
+    cmd: uv run python manage.py setup_rbac
+  
   pack:
     desc: Pack the project into a single .tar
     deps:

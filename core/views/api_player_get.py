@@ -1,13 +1,14 @@
-from django.http import JsonResponse, HttpResponseNotAllowed
-from django.views.decorators.http import require_http_methods
-from core.models.db.player import Player
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 
-@require_http_methods(["GET"])
+from core.authorization.decorators import json_permission_required
+from core.authorization.permissions import VIEW_PLAYERS
+from core.models import Player
+
+
+@json_permission_required(VIEW_PLAYERS)
+@require_GET
 def api_players(request):
-    return _api_players_get(request)
-
-
-def _api_players_get(request):
     players = Player.objects.filter(is_active=True).order_by(
         "-alliance_rank",
         "ingame_name",

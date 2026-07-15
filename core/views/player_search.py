@@ -1,11 +1,14 @@
+from django.contrib.auth.decorators import permission_required
 from django.db.models import Count, Q
 from django.shortcuts import render
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_GET
 
+from core.authorization.permissions import VIEW_PLAYERS
 from core.models import Player
 
 
-@require_http_methods(["GET"])
+@permission_required(VIEW_PLAYERS, raise_exception=True)
+@require_GET
 def player_search_view(request):
     query = request.GET.get("q", "").strip()
 

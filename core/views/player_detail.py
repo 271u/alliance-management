@@ -1,10 +1,13 @@
+from django.contrib.auth.decorators import permission_required
 from django.shortcuts import render
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_GET
 
+from core.authorization.permissions import VIEW_PLAYERS
 from core.models import Player
 
 
-@require_http_methods(["GET"])
+@permission_required(VIEW_PLAYERS, raise_exception=True)
+@require_GET
 def player_detail_view(request, id):
     error_message = ""
 
@@ -21,5 +24,8 @@ def player_detail_view(request, id):
     return render(
         request,
         "player_detail.html",
-        {"player": player, "comments": comments, "error_message": error_message},
+        {
+            "player": player,
+            "comments": comments,
+        },
     )

@@ -234,7 +234,7 @@ SOCIALACCOUNT_PROVIDERS = {
                     "server_url": os.getenv("OIDC_SERVER_URL", ""),
                     "fetch_userinfo": True,
                     "oauth_pkce_enabled": True,
-                    "scope": ["openid", "profile", "email", "groups"],
+                    "scope": ["openid", "profile", "email"],
                     "token_auth_method": os.getenv(
                         "OIDC_TOKEN_AUTH_METHOD",
                         "client_secret_basic",
@@ -267,13 +267,6 @@ ACCOUNT_SIGNUP_FIELDS = ["email*"]
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
-
-def env_set(name: str, default: str = "") -> set[str]:
-    return {
-        item.strip() for item in os.getenv(name, default).split(",") if item.strip()
-    }
-
-
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
@@ -282,9 +275,4 @@ if SENTRY_DSN:
         enable_logs=SENTRY_LOGGING,
     )
 
-OIDC_GROUPS_CLAIM = "groups"
-
-OIDC_USER_GROUPS = env_set("OIDC_USER_GROUP", "server-management")
-OIDC_SUPERUSER_GROUPS = env_set("OIDC_ADMIN_GROUP", "server-superuser")
-
-SOCIALACCOUNT_ADAPTER = "core.adapters.OIDCGroupSocialAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "core.adapters.OIDCSocialAccountAdapter"

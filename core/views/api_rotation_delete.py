@@ -7,8 +7,11 @@ from django.views.decorators.http import require_http_methods
 from core.models import TrainRotationEntry
 from core.models.db.auditlog import AuditLog
 from core.audit.rotation import create_rotation_audit_log, rotation_order_snapshot
+from core.authorization.decorators import json_permission_required
+from core.authorization.permissions import MANAGE_ROTATION
 
 
+@json_permission_required(MANAGE_ROTATION)
 @require_http_methods(["DELETE"])
 def api_rotation_delete(request):
     try:

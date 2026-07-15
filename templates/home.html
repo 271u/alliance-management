@@ -18,10 +18,12 @@
 
   <div class="level-right">
     <div class="buttons">
-      <a class="button is-primary" href="{% url 'players' %}">
+      {% if perms.core.view_player %}
+      <a class="button is-primary" href="{% url 'players' %}"{% if not perms.core.view_player %} disabled {% endif %}>
         <i class="fa-solid fa-users mr-2"></i>
         Members
       </a>
+      {% endif %}
 
       <a class="button is-link is-light" href="{% url 'rotation' %}">
         <i class="fa-solid fa-train mr-2"></i>
@@ -89,21 +91,21 @@
       </div>
 
       {% for rank in rank_breakdown %}
-        <div class="mb-3">
-          <div class="is-flex is-align-items-center is-justify-content-space-between mb-1">
-            <div>
-              {% alliance_status_tag rank.label %}
-            </div>
-
-            <strong>{{ rank.count }}</strong>
+      <div class="mb-3">
+        <div class="is-flex is-align-items-center is-justify-content-space-between mb-1">
+          <div>
+            {% alliance_status_tag rank.label %}
           </div>
 
-          <div class="rank-progress-track">
-            <div class="rank-progress-fill" style="width: {{ rank.percentage }}%;"></div>
-          </div>
+          <strong>{{ rank.count }}</strong>
         </div>
+
+        <div class="rank-progress-track">
+          <div class="rank-progress-fill" style="width: {{ rank.percentage }}%;"></div>
+        </div>
+      </div>
       {% empty %}
-        <p class="has-text-grey">No members found.</p>
+      <p class="has-text-grey">No members found.</p>
       {% endfor %}
     </div>
 
@@ -114,7 +116,7 @@
         </div>
 
         <div class="level-right">
-          <a class="button is-small is-light" href="{% url 'players' %}">
+          <a class="button is-small is-light" {% if perms.core.view_player %}href="{% url 'players' %}"{% endif %}{% if not perms.core.view_player %} disabled {% endif %}>
             View all
           </a>
         </div>
@@ -131,27 +133,27 @@
 
         <tbody>
           {% for player in top_players %}
-            <tr>
-              <td>
-                <a href="{% url 'player_detail' player.id %}">
-                  {{ player.ingame_name }}
-                </a>
-              </td>
+          <tr>
+            <td>
+              <a {% if perms.core.view_player %}href="{% url 'player_detail' player.id %}"{% endif %}>
+                {{ player.ingame_name }}
+              </a>
+            </td>
 
-              <td>
-                {% alliance_status_tag player.alliance_status %}
-              </td>
+            <td>
+              {% alliance_status_tag player.alliance_status %}
+            </td>
 
-              <td class="has-text-right">
-                {{ player.strength_string }}
-              </td>
-            </tr>
+            <td class="has-text-right">
+              {{ player.strength_string }}
+            </td>
+          </tr>
           {% empty %}
-            <tr>
-              <td colspan="3" class="has-text-grey">
-                No members found.
-              </td>
-            </tr>
+          <tr>
+            <td colspan="3" class="has-text-grey">
+              No members found.
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
@@ -163,56 +165,56 @@
       <h2 class="title is-4">Player Sync</h2>
 
       {% if latest_player_sync %}
-        {% if latest_player_sync.status == "success" %}
-          <article class="message is-success">
-            <div class="message-body">
-              Last sync completed successfully
-              <strong>{{ latest_player_sync.finished_at|timesince }} ago</strong>.
-            </div>
-          </article>
-        {% elif latest_player_sync.status == "running" %}
-          <article class="message is-warning">
-            <div class="message-body">
-              Player sync is currently running.
-            </div>
-          </article>
-        {% elif latest_player_sync.status == "failed" %}
-          <article class="message is-danger">
-            <div class="message-body">
-              Last sync failed
-              <strong>{{ latest_player_sync.finished_at|timesince }} ago</strong>.
-              {% if latest_player_sync.message %}
-                <br>
-                {{ latest_player_sync.message }}
-              {% endif %}
-            </div>
-          </article>
-        {% endif %}
+      {% if latest_player_sync.status == "success" %}
+      <article class="message is-success">
+        <div class="message-body">
+          Last sync completed successfully
+          <strong>{{ latest_player_sync.finished_at|timesince }} ago</strong>.
+        </div>
+      </article>
+      {% elif latest_player_sync.status == "running" %}
+      <article class="message is-warning">
+        <div class="message-body">
+          Player sync is currently running.
+        </div>
+      </article>
+      {% elif latest_player_sync.status == "failed" %}
+      <article class="message is-danger">
+        <div class="message-body">
+          Last sync failed
+          <strong>{{ latest_player_sync.finished_at|timesince }} ago</strong>.
+          {% if latest_player_sync.message %}
+          <br>
+          {{ latest_player_sync.message }}
+          {% endif %}
+        </div>
+      </article>
+      {% endif %}
 
-        <table class="table is-fullwidth">
-          <tbody>
-            <tr>
-              <th>Created</th>
-              <td>{{ latest_player_sync.created_count }}</td>
-            </tr>
-            <tr>
-              <th>Updated</th>
-              <td>{{ latest_player_sync.updated_count }}</td>
-            </tr>
-            <tr>
-              <th>Joined</th>
-              <td>{{ latest_player_sync.joined_count }}</td>
-            </tr>
-            <tr>
-              <th>Left</th>
-              <td>{{ latest_player_sync.left_count }}</td>
-            </tr>
-          </tbody>
-        </table>
+      <table class="table is-fullwidth">
+        <tbody>
+          <tr>
+            <th>Created</th>
+            <td>{{ latest_player_sync.created_count }}</td>
+          </tr>
+          <tr>
+            <th>Updated</th>
+            <td>{{ latest_player_sync.updated_count }}</td>
+          </tr>
+          <tr>
+            <th>Joined</th>
+            <td>{{ latest_player_sync.joined_count }}</td>
+          </tr>
+          <tr>
+            <th>Left</th>
+            <td>{{ latest_player_sync.left_count }}</td>
+          </tr>
+        </tbody>
+      </table>
       {% else %}
-        <p class="has-text-grey">
-          No player sync has been recorded yet.
-        </p>
+      <p class="has-text-grey">
+        No player sync has been recorded yet.
+      </p>
       {% endif %}
     </div>
 
@@ -230,29 +232,29 @@
       </div>
 
       {% if rotation_missing_count > 0 %}
-        <article class="message is-warning">
-          <div class="message-body">
-            {{ rotation_missing_count }} eligible R4/R5 players are not in rotation.
-          </div>
-        </article>
+      <article class="message is-warning">
+        <div class="message-body">
+          {{ rotation_missing_count }} eligible R4/R5 players are not in rotation.
+        </div>
+      </article>
       {% endif %}
 
       {% for entry in next_rotation_entries %}
-        <div class="rotation-preview-row">
-          <span class="tag is-dark mr-2">#{{ entry.position }}</span>
+      <div class="rotation-preview-row">
+        <span class="tag is-dark mr-2">#{{ entry.position }}</span>
 
-          <a href="{% url 'player_detail' entry.player.id %}">
-            {{ entry.player.ingame_name }}
-          </a>
+        <a {% if perms.core.view_player %}href="{% url 'player_detail' entry.player.id %}"{% endif %}>
+          {{ entry.player.ingame_name }}
+        </a>
 
-          <span class="ml-2">
-            {% alliance_status_tag entry.player.alliance_status %}
-          </span>
-        </div>
+        <span class="ml-2">
+          {% alliance_status_tag entry.player.alliance_status %}
+        </span>
+      </div>
       {% empty %}
-        <p class="has-text-grey">
-          No players are currently in rotation.
-        </p>
+      <p class="has-text-grey">
+        No players are currently in rotation.
+      </p>
       {% endfor %}
     </div>
 
@@ -273,9 +275,9 @@
             <th>Missing join date</th>
             <td>
               {% if players_without_join_date_count %}
-                <span class="tag is-warning">{{ players_without_join_date_count }}</span>
+              <span class="tag is-warning">{{ players_without_join_date_count }}</span>
               {% else %}
-                <span class="tag is-success">0</span>
+              <span class="tag is-success">0</span>
               {% endif %}
             </td>
           </tr>
@@ -283,9 +285,9 @@
             <th>Missing strength</th>
             <td>
               {% if players_without_strength_count %}
-                <span class="tag is-warning">{{ players_without_strength_count }}</span>
+              <span class="tag is-warning">{{ players_without_strength_count }}</span>
               {% else %}
-                <span class="tag is-success">0</span>
+              <span class="tag is-success">0</span>
               {% endif %}
             </td>
           </tr>
@@ -301,22 +303,22 @@
       <h2 class="title is-4">Recently Joined</h2>
 
       {% for player in recent_joined_players %}
-        <div class="movement-row">
-          <div>
-            <a href="{% url 'player_detail' player.id %}">
-              {{ player.ingame_name }}
-            </a>
-            <div class="has-text-grey is-size-7">
-              Joined {{ player.joined_at|date:"Y-m-d H:i" }}
-            </div>
+      <div class="movement-row">
+        <div>
+          <a {% if perms.core.view_player %}href="{% url 'player_detail' player.id %}"{% endif %}>
+            {{ player.ingame_name }}
+          </a>
+          <div class="has-text-grey is-size-7">
+            Joined {{ player.joined_at|date:"Y-m-d H:i" }}
           </div>
-
-          {% alliance_status_tag player.alliance_status %}
         </div>
+
+        {% alliance_status_tag player.alliance_status %}
+      </div>
       {% empty %}
-        <p class="has-text-grey">
-          No recent joins found.
-        </p>
+      <p class="has-text-grey">
+        No recent joins found.
+      </p>
       {% endfor %}
     </div>
   </div>
@@ -326,22 +328,22 @@
       <h2 class="title is-4">Recently Left</h2>
 
       {% for player in recent_left_players %}
-        <div class="movement-row">
-          <div>
-            <a href="{% url 'player_detail' player.id %}">
-              {{ player.ingame_name }}
-            </a>
-            <div class="has-text-grey is-size-7">
-              Left {{ player.left_at|date:"Y-m-d H:i" }}
-            </div>
+      <div class="movement-row">
+        <div>
+          <a {% if perms.core.view_player %}href="{% url 'player_detail' player.id %}"{% endif %}>
+            {{ player.ingame_name }}
+          </a>
+          <div class="has-text-grey is-size-7">
+            Left {{ player.left_at|date:"Y-m-d H:i" }}
           </div>
-
-          <span class="tag is-danger">Left</span>
         </div>
+
+        <span class="tag is-danger">Left</span>
+      </div>
       {% empty %}
-        <p class="has-text-grey">
-          No recent leaves found.
-        </p>
+      <p class="has-text-grey">
+        No recent leaves found.
+      </p>
       {% endfor %}
     </div>
   </div>

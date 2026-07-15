@@ -1,4 +1,5 @@
 import { getCsrfToken } from "./misc.js";
+import { setError, ErrorResponse } from "./errors.js";
 
 type Conductor = {
   id: number;
@@ -26,18 +27,19 @@ declare const Sortable: {
   ) => void;
 };
 
-
 document.addEventListener("DOMContentLoaded", () => {
   initDragAndDrop();
   initDeleteButtons();
   updateRotationOrderInput();
 });
 
-
-
 function setButtonState(enabled: boolean): void {
-  const discardButton = document.getElementById("button-discard") as HTMLButtonElement | null;
-  const saveButton = document.getElementById("button-save") as HTMLButtonElement | null;
+  const discardButton = document.getElementById(
+    "button-discard",
+  ) as HTMLButtonElement | null;
+  const saveButton = document.getElementById(
+    "button-save",
+  ) as HTMLButtonElement | null;
 
   if (!discardButton || !saveButton) {
     console.warn("Save or discard button not found.");
@@ -49,13 +51,19 @@ function setButtonState(enabled: boolean): void {
 }
 
 function getCurrentConductors(): Conductor[] {
-  const conductorRows = document.querySelectorAll<HTMLElement>(".rotation-row[data-id]");
+  const conductorRows = document.querySelectorAll<HTMLElement>(
+    ".rotation-row[data-id]",
+  );
 
   const conductors = Array.from(conductorRows).map((row): Conductor => {
     const indexElement = row.querySelector<HTMLElement>(".rotation-index");
 
+    const rawId = row.dataset.id;
+    const parsedId =
+      rawId !== undefined ? Number.parseInt(rawId, 10) : Number.NaN;
+
     return {
-      id: Number(row.dataset.id) ?? 0,
+      id: Number.isNaN(parsedId) ? 0 : parsedId,
       name: row.dataset.name ?? "",
       rank: row.dataset.rank ?? "",
       position: indexElement ? Number(indexElement.textContent?.trim()) : -1,
@@ -86,13 +94,17 @@ function initDragAndDrop(): void {
 
 // obsolete?
 function updateRotationOrderInput(): void {
-  const orderInput = document.getElementById("rotation-order-input") as HTMLInputElement | null;
+  const orderInput = document.getElementById(
+    "rotation-order-input",
+  ) as HTMLInputElement | null;
 
   if (!orderInput) {
     return;
   }
 
-  const ids = Array.from(document.querySelectorAll<HTMLElement>("#rotation-list .rotation-row"))
+  const ids = Array.from(
+    document.querySelectorAll<HTMLElement>("#rotation-list .rotation-row"),
+  )
     .map((row) => row.dataset.id)
     .filter((id): id is string => id !== undefined);
 
@@ -162,55 +174,74 @@ function buttonDiscardAction(): void {
 }
 
 async function buttonSaveAction(): Promise<void> {
-  const saveButton = document.getElementById("button-save") as HTMLButtonElement | null;
+  const saveButton = document.getElementById(
+    "button-save",
+  ) as HTMLButtonElement | null;
 
   if (!saveButton) {
     console.warn("Save button not found.");
     return;
   }
 
-  saveButton.classList.add("is-loading")
+  saveButton.classList.add("is-loading");
+  setButtonState(false);
 
-  const currentConductors = getCurrentConductors()
-  let updateBody:ConductorChangeItem[] = [];
-  let index = 1;
+  const updateBody: ConductorChangeItem[] = getCurrentConductors().map(
+    (conductor, index) => ({
+      id: conductor.id,
+      position: index + 1,
+    }),
+  );
 
-  currentConductors.forEach(element => {
-    updateBody.push(
-      {
-        id: element.id,
-        position: index
+  try {
+    const response = await fetch("/api/rotation/update", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: JSON.stringify(updateBody),
+    });
+
+    if (!response.ok) {
+      const responseBody = await response.text();
+
+      try {
+        const errorData = JSON.parse(responseBody) as ErrorResponse;
+
+        setError(
+          errorData.detail ?? errorData.error ?? "An unknown error occurred.",
+        );
+      } catch {
+        setError(
+          responseBody || response.statusText || "An unknown error occurred.",
+        );
       }
-    )
 
-    index++;
-  });
+      setButtonState(true);
+      return;
+    }
 
-  const response = await fetch("/api/rotation/update", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCsrfToken(),
-        },
-        body: JSON.stringify(updateBody),
-      });
-
-      if (!response.ok) {
-        console.error("Failed to update rotation.");
-        return;
-      }
-
-
-
-  window.location.reload();
+    window.location.reload();
+  } catch (error: unknown) {
+    console.error("Failed to update rotation.", error);
+    setError("The rotation could not be saved. Please try again.");
+    setButtonState(true);
+  } finally {
+    saveButton.classList.remove("is-loading");
+  }
 }
-
 
 // Wait for the DOM to be ready, then hook up the click event
 document.addEventListener("DOMContentLoaded", () => {
-  const saveButton = document.getElementById("button-save") as HTMLButtonElement | null;
-  if (saveButton) saveButton.addEventListener("click", buttonSaveAction)
+  const saveButton = document.getElementById(
+    "button-save",
+  ) as HTMLButtonElement | null;
+  if (saveButton) saveButton.addEventListener("click", buttonSaveAction);
 
-  const discardButton = document.getElementById("button-discard") as HTMLInputElement | null;
-  if (discardButton) discardButton.addEventListener("input", buttonDiscardAction)
+  const discardButton = document.getElementById(
+    "button-discard",
+  ) as HTMLInputElement | null;
+  if (discardButton)
+    discardButton.addEventListener("click", buttonDiscardAction);
 });
