@@ -33,7 +33,7 @@ RUN uv sync --locked --no-dev
 RUN DJANGO_DEBUG=0 DJANGO_SECRET_KEY=build-time-secret uv run python manage.py collectstatic --noinput
 
 
-FROM python:3.14-slim-trixie AS runtime
+FROM python:3.15-slim-trixie AS runtime
 
 ARG APP_VERSION=dev
 ARG APP_SOURCE_URL=https://github.com/271u/alliance-management
